@@ -13,11 +13,15 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/backend/main.py"
+      "destination": "backend/main.py"
+    },
+    {
+      "source": "/static/(.*)",
+      "destination": "frontend/$1"
     },
     {
       "source": "/(.*)",
-      "destination": "/frontend/$1"
+      "destination": "frontend/$1"
     }
   ]
 }
