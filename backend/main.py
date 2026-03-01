@@ -48,15 +48,27 @@ async def lifespan(app: FastAPI):
                     risk_level=level,
                 )
                 db.add(vendor)
-            db.commit()
+            try:
+                db.commit()
+            except Exception as e:
+                print(f"Read-only filesystem or DB error: {e}")
+                db.rollback()
     finally:
         db.close()
 
-    scheduler.add_job(update_all_risk_scores, "interval", seconds=10, id="risk_tick")
-    scheduler.start()
+    # Scheduler might fail or be useless on serverless, but we try
+    try:
+        scheduler.add_job(update_all_risk_scores, "interval", seconds=10, id="risk_tick")
+        scheduler.start()
+    except Exception as e:
+        print(f"Scheduler failed to start (likely serverless environment): {e}")
+
     yield
     # Shutdown
-    scheduler.shutdown(wait=False)
+    try:
+        scheduler.shutdown(wait=False)
+    except:
+        pass
 
 
 app = FastAPI(
