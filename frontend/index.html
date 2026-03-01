@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="CRAG — AI-Powered Third-Party Vendor Risk Monitoring System. Continuous risk scoring, live dashboards, automated alerts." />
+    <title>CRAG — Vendor Risk Monitor</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <!-- ═══ LANDING PAGE ═══════════════════════════════════ -->
+    <div id="landing-page" class="landing-page">
+        <nav class="landing-nav">
+            <div class="container">
+                <div class="landing-logo"><span class="landing-logo-icon">🛡️</span> CRAG</div>
+                <div class="landing-nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#stats">Metrics</a>
+                    <button class="btn btn-primary btn-glow" onclick="showLogin()">Login →</button>
+                </div>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <div class="container">
+                <div class="hero-bg-orb hero-orb-1"></div>
+                <div class="hero-bg-orb hero-orb-2"></div>
+                <div class="hero-content">
+                    <span class="hero-badge">🤖 AI-Powered · Phase 1 Prototype</span>
+                    <h1>Third-Party Vendor<br><span class="hero-gradient-text">Risk Monitoring</span></h1>
+                    <p class="hero-sub">CRAG — Cognitive Resilience and Automated Governance. Continuous, automated
+                        cybersecurity risk scoring
+                        for your vendor ecosystem.</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary btn-lg btn-glow" onclick="showLogin()">Get Started →</button>
+                        <button class="btn btn-outline btn-lg"
+                            onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Learn
+                            More</button>
+                    </div>
+                    <div class="hero-trust"><span>✅ No setup required</span><span>🔒 Local data only</span><span>⚡
+                            Real-time
+                            monitoring</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-features" id="features">
+            <div class="container">
+                <h2 class="section-title">Everything You Need for Vendor Risk Governance</h2>
+                <div class="features-grid">
+                    <div class="feature-card"><span class="feature-icon">🏢</span>
+                        <h4>Vendor Onboarding</h4>
+                        <p>Register vendors with name, category, criticality, and status in seconds.</p>
+                    </div>
+                    <div class="feature-card"><span class="feature-icon">🧠</span>
+                        <h4>AI Risk Scoring</h4>
+                        <p>Dynamic risk scores (0–100) recalculated every 10 seconds using intelligent simulation.</p>
+                    </div>
+                    <div class="feature-card"><span class="feature-icon">📊</span>
+                        <h4>Live Dashboard</h4>
+                        <p>Real-time KPI cards, doughnut charts, and live vendor monitoring with auto-refresh.</p>
+                    </div>
+                    <div class="feature-card"><span class="feature-icon">🔔</span>
+                        <h4>Automated Alerts</h4>
+                        <p>Instant alerts when vendor risk crosses the critical threshold of 70.</p>
+                    </div>
+                    <div class="feature-card"><span class="feature-icon">📜</span>
+                        <h4>Audit Trail</h4>
+                        <p>Append-only governance ledger tracking every system event for compliance.</p>
+                    </div>
+                    <div class="feature-card"><span class="feature-icon">🔐</span>
+                        <h4>Role-Based Access</h4>
+                        <p>Admin sees everything. Vendors see only their own risk data and alerts.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-stats" id="stats">
+            <div class="container">
+                <div class="stat-item"><span class="stat-num">10s</span><span class="stat-label">Risk Update
+                        Cycle</span>
+                </div>
+                <div class="stat-item"><span class="stat-num">100%</span><span class="stat-label">Automation</span>
+                </div>
+                <div class="stat-item"><span class="stat-num">24/7</span><span class="stat-label">Monitoring</span>
+                </div>
+                <div class="stat-item"><span class="stat-num">0</span><span class="stat-label">Manual Effort</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-cta">
+            <div class="container">
+                <h2>Ready to Monitor Your Vendor Ecosystem?</h2>
+                <p>Login as Admin for full access or as a Vendor to view your risk profile.</p>
+                <button class="btn btn-primary btn-lg btn-glow" onclick="showLogin()">Login Now →</button>
+            </div>
+        </section>
+
+        <footer class="landing-footer">
+            <div class="container">
+                <p>© 2026 CRAG — Cognitive Resilience and Automated Governance | Built by <a
+                        href="https://pganeshkrishnareddy.vercel.app/" target="_blank">P Ganesh Krishna Reddy</a></p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ═══ LOGIN MODAL ═══════════════════════════════════ -->
+    <div id="login-modal" class="modal-overlay" style="display:none">
+        <div class="login-card modal-content">
+            <button class="modal-close" onclick="closeLogin()">✕</button>
+            <div class="login-header">
+                <span class="login-logo">🛡️</span>
+                <h2>Welcome to CRAG</h2>
+                <p>Sign in to access the monitoring dashboard</p>
+            </div>
+            <div class="login-role-toggle">
+                <button class="role-btn active" id="role-admin" onclick="setLoginRole('admin')">🔑 Admin</button>
+                <button class="role-btn" id="role-vendor" onclick="setLoginRole('vendor')">🏢 Vendor</button>
+            </div>
+            <form id="login-form" autocomplete="off">
+                <div class="field" style="margin-bottom:14px">
+                    <label for="login-user">Username</label>
+                    <input id="login-user" type="text" placeholder="Enter username" required />
+                </div>
+                <div class="field" style="margin-bottom:14px">
+                    <label for="login-pass">Password</label>
+                    <input id="login-pass" type="password" placeholder="Enter password" required />
+                </div>
+                <div id="login-error" class="login-error" style="display:none">❌ Invalid credentials. Try again.</div>
+                <button type="submit" class="btn btn-primary btn-lg" style="width:100%">Sign In</button>
+            </form>
+            <div class="login-hints" id="login-hints" style="margin-top: 20px;">
+                <small><strong>Demo:</strong> admin / crag2026</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ APP SHELL (sidebar + main) ═══════════════════ -->
+    <div id="app-shell" style="display:none">
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+        <!-- ─── Sidebar ─────────────────────────────────────── -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">🛡️</div>
+                <h1>CRAG</h1>
+                <span class="brand-sub">Vendor Risk Monitor</span>
+            </div>
+            <nav>
+                <button class="nav-btn active" data-pane="dashboard" id="nav-dashboard">
+                    <span class="nav-icon">📊</span> Dashboard
+                </button>
+                <button class="nav-btn" data-pane="vendors" id="nav-vendors">
+                    <span class="nav-icon">🏢</span> Vendors
+                </button>
+                <button class="nav-btn" data-pane="alerts" id="nav-alerts">
+                    <span class="nav-icon">🔔</span> Alerts
+                    <span class="badge badge-alert" id="alert-count" style="display:none;">0</span>
+                </button>
+                <button class="nav-btn" data-pane="audit" id="nav-audit">
+                    <span class="nav-icon">📜</span> Audit Log
+                </button>
+                <div class="nav-divider"></div>
+                <button class="nav-btn" data-pane="help" id="nav-help">
+                    <span class="nav-icon">❓</span> Help
+                </button>
+                <button class="nav-btn" data-pane="about" id="nav-about">
+                    <span class="nav-icon">ℹ️</span> About Us
+                </button>
+                <button class="nav-btn" data-pane="contact" id="nav-contact">
+                    <span class="nav-icon">✉️</span> Contact
+                </button>
+                <button class="nav-btn" data-pane="terms" id="nav-terms">
+                    <span class="nav-icon">📄</span> Terms
+                </button>
+                <button class="nav-btn" data-pane="developer" id="nav-developer">
+                    <span class="nav-icon">👨‍💻</span> Developer
+                </button>
+                <div class="nav-divider"></div>
+                <button class="nav-btn" id="nav-logout" onclick="doLogout()">
+                    <span class="nav-icon">🚨</span> Logout
+                </button>
+            </nav>
+
+            <!-- Zoom Controls Widget -->
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="adjustScale(-1)" title="Reduce Font Size">－</button>
+                <div class="zoom-level" id="zoom-level">100%</div>
+                <button class="zoom-btn" onclick="adjustScale(1)" title="Increase Font Size">＋</button>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="engine-toggle" id="engine-toggle" title="Click to pause/resume risk engine">
+                    <span class="status-dot" id="engine-dot"></span>
+                    <span id="engine-label">Engine Active</span>
+                </button>
+                <div class="logged-in-as" id="logged-in-as"></div>
+            </div>
+        </aside>
+
+        <!-- ─── Main Content ──────────────────────────────────── -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="container" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <button id="sidebar-toggle" class="sidebar-toggle">
+                            <span class="toggle-icon">☰</span>
+                        </button>
+                        <h2 id="page-title">Dashboard</h2>
+                    </div>
+                    <div class="topbar-right">
+                        <span id="engine-status" class="status-indicator">● LIVE</span>
+                        <span class="time-display" id="clock">--:--:--</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-body container" id="content-body">
+                <!-- VENDOR DASHBOARD -->
+                <div id="view-dashboard" class="view-panel active">
+                    <!-- ─── DASHBOARD PANE ─────────────────────────────── -->
+                    <section class="pane active" id="pane-dashboard">
+                        <div class="container">
+                            <!-- KPI Strip -->
+                            <div class="kpi-grid">
+                                <div class="kpi-card">
+                                    <span class="kpi-title">TOTAL VENDORS</span>
+                                    <span class="kpi-value" id="total-vendors">0</span>
+                                </div>
+                                <div class="kpi-card" style="border-top-color: var(--low)">
+                                    <span class="kpi-title">LOW RISK</span>
+                                    <span class="kpi-value risk-low" id="low-risk-count">0</span>
+                                </div>
+                                <div class="kpi-card" style="border-top-color: var(--med)">
+                                    <span class="kpi-title">MEDIUM RISK</span>
+                                    <span class="kpi-value risk-med" id="med-risk-count">0</span>
+                                </div>
+                                <div class="kpi-card" style="border-top-color: var(--high)">
+                                    <span class="kpi-title">HIGH RISK</span>
+                                    <span class="kpi-value risk-high" id="high-risk-count">0</span>
+                                </div>
+                            </div>
+
+                            <!-- Main Dashboard Area -->
+                            <div class="dash-grid">
+                                <div class="card chart-container">
+                                    <h3 class="card-title">Risk Distribution</h3>
+                                    <canvas id="riskChart"></canvas>
+                                </div>
+                                <div class="card">
+                                    <h3 class="card-title">Live Vendor Monitor</h3>
+                                    <div class="vendor-list" id="vendor-live-list">
+                                        <div class="empty-state">Loading vendors...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ─── VENDORS PANE ───────────────────────────────── -->
+                    <section class="pane" id="pane-vendors">
+                        <div class="container">
+                            <div class="card mb-4" id="nav-vendors-add">
+                                <h3>Onboard New Vendor</h3>
+                                <form id="vendor-form" autocomplete="off">
+                                    <div class="form-grid">
+                                        <div class="field">
+                                            <label for="v-name">Vendor Name</label>
+                                            <input id="v-name" type="text" placeholder="e.g. Acme Corp" required />
+                                        </div>
+                                        <div class="field">
+                                            <label for="v-category">Category</label>
+                                            <select id="v-category" required>
+                                                <option value="">Select…</option>
+                                                <option>Cloud Provider</option>
+                                                <option>SaaS Vendor</option>
+                                                <option>Payment Processor</option>
+                                                <option>IT Infrastructure</option>
+                                                <option>Consulting</option>
+                                                <option>Data Analytics</option>
+                                                <option>Security Vendor</option>
+                                                <option>Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="v-criticality">Criticality</label>
+                                            <select id="v-criticality" required>
+                                                <option value="">Select…</option>
+                                                <option>Low</option>
+                                                <option>Medium</option>
+                                                <option>High</option>
+                                                <option>Critical</option>
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="v-status">Status</label>
+                                            <select id="v-status">
+                                                <option>Active</option>
+                                                <option>Inactive</option>
+                                                <option>Under Review</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" id="btn-add-vendor">+ Add
+                                        Vendor</button>
+                                </form>
+                            </div>
+
+                            <div class="card p-0">
+                                <div class="table-container">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Category</th>
+                                                <th>Criticality</th>
+                                                <th>Score</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="vendor-tbody">
+                                            <tr>
+                                                <td colspan="7" class="empty-state">No vendors found.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ─── ALERTS PANE ────────────────────────────────── -->
+                    <section class="pane" id="pane-alerts">
+                        <div class="container">
+                            <div class="flex-between">
+                                <p class="text-dim">Real-time alerts triggered by intelligent risk evaluation.</p>
+                                <button class="btn btn-outline" id="btn-reset-alerts">Clear All Alerts</button>
+                            </div>
+                            <div class="card mt-4" style="background: transparent; border: none; padding: 0;">
+                                <div class="alert-list" id="alerts-list">
+                                    <div class="empty-state">No active high-risk alerts.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- ─── AUDIT LOG PANE ─────────────────────────────── -->
+                    <section class="pane" id="pane-audit">
+                        <div class="container">
+                            <div class="flex-between">
+                                <p class="text-dim">Immutable ledger of all vendor state changes and system events.</p>
+                                <button class="btn btn-reset" id="btn-reset-audit" title="Clear audit log">🗑️ Reset
+                                    Log</button>
+                            </div>
+                            <div class="table-wrap">
+                                <table id="audit-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Timestamp</th>
+                                            <th>Vendor</th>
+                                            <th>Action</th>
+                                            <th>Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="audit-log-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                </div>
+                </section>
+
+                <!-- ─── HELP PANE ──────────────────────────────────── -->
+                <section class="pane" id="pane-help">
+                    <div class="container">
+                        <div class="page-hero">
+                            <span class="hero-icon">🚀</span>
+                            <h2>How CRAG Works</h2>
+                            <p>Understanding the Cognitive Resilience and Automated Governance framework</p>
+                        </div>
+
+                        <div class="info-cards-grid">
+                            <div class="info-card">
+                                <div class="info-card-icon">🧠</div>
+                                <h4>How It Was Developed</h4>
+                                <p>CRAG was developed as a Phase-1 prototype to validate continuous, automated
+                                    third-party
+                                    vendor
+                                    risk monitoring. The system uses a <strong>FastAPI + SQLAlchemy</strong> backend
+                                    with SQLite
+                                    for
+                                    data persistence, and a <strong>vanilla HTML/CSS/JS</strong> frontend with Chart.js
+                                    for
+                                    visualization.</p>
+                                <p>The risk engine employs a <strong>weighted random-walk algorithm</strong> with
+                                    mean-reversion
+                                    to
+                                    simulate realistic AI-driven risk scoring every 10 seconds. This approach validates
+                                    the CRAG
+                                    concept before integrating real ML models in Phase-2.</p>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-icon">📋</div>
+                                <h4>How to Use</h4>
+                                <ul class="help-steps">
+                                    <li><strong>1. Onboard Vendors</strong> — Go to the Vendors page, fill in vendor
+                                        name,
+                                        category,
+                                        criticality, and status, then click "+ Add Vendor".</li>
+                                    <li><strong>2. Monitor Dashboard</strong> — The Dashboard shows live risk scores,
+                                        KPI cards,
+                                        and
+                                        a doughnut chart updated every 5 seconds.</li>
+                                    <li><strong>3. View Details</strong> — Click any vendor card or table row to open a
+                                        detailed
+                                        popup with risk gauge, analysis, alerts, and audit trail.</li>
+                                    <li><strong>4. Check Alerts</strong> — The Alerts page shows all high-risk events
+                                        (score >
+                                        70)
+                                        with timestamps.</li>
+                                    <li><strong>5. Review Audit Log</strong> — Every action is recorded in the
+                                        append-only audit
+                                        trail for governance compliance.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="info-cards-grid">
+                            <div class="info-card">
+                                <div class="info-card-icon">⚙️</div>
+                                <h4>Architecture</h4>
+                                <div class="tech-stack-list">
+                                    <div class="tech-item"><span class="tech-badge">Backend</span> Python · FastAPI ·
+                                        SQLAlchemy
+                                        ·
+                                        APScheduler</div>
+                                    <div class="tech-item"><span class="tech-badge">Frontend</span> HTML5 · CSS3 ·
+                                        JavaScript ·
+                                        Chart.js</div>
+                                    <div class="tech-item"><span class="tech-badge">Database</span> SQLite (append-only
+                                        audit
+                                        design)</div>
+                                    <div class="tech-item"><span class="tech-badge">Engine</span> Weighted random-walk +
+                                        mean-reversion simulation</div>
+                                </div>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-icon">🗺️</div>
+                                <h4>Roadmap</h4>
+                                <div class="roadmap">
+                                    <div class="rm-item rm-done"><span class="rm-dot"></span>
+                                        <div><strong>Phase 1</strong> — Functional Prototype<br><small>Vendor
+                                                onboarding, risk
+                                                simulation, dashboard, alerts, audit log ✅</small></div>
+                                    </div>
+                                    <div class="rm-item rm-next"><span class="rm-dot"></span>
+                                        <div><strong>Phase 2</strong> — AI Integration<br><small>Trained ML models,
+                                                NLP-based
+                                                threat
+                                                intelligence, advanced analytics</small></div>
+                                    </div>
+                                    <div class="rm-item rm-future"><span class="rm-dot"></span>
+                                        <div><strong>Phase 3</strong> — Blockchain Audit<br><small>Immutable audit
+                                                trail, smart
+                                                contract governance, multi-org federation</small></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </section>
+
+                <!-- ─── ABOUT US PANE ──────────────────────────────── -->
+                <section class="pane" id="pane-about">
+                    <div class="page-hero">
+                        <span class="hero-icon">🛡️</span>
+                        <h2>About CRAG</h2>
+                        <p>Cognitive Resilience and Automated Governance</p>
+                    </div>
+
+                    <div class="about-content">
+                        <div class="card">
+                            <h3>Our Mission</h3>
+                            <p style="color:var(--text-dim);line-height:1.7">CRAG (Cognitive Resilience and
+                                Automated
+                                Governance) is a research-driven initiative to transform how organizations manage
+                                third-party
+                                vendor cybersecurity risk. Traditional TPRM processes are periodic, manual, and
+                                reactive —
+                                CRAG
+                                makes them <strong>continuous, automated, and intelligence-driven</strong>.</p>
+                            <p style="color:var(--text-dim);line-height:1.7;margin-top:12px">Our system continuously
+                                monitors
+                                vendor risk posture using AI-powered scoring engines, providing real-time
+                                dashboards,
+                                automated
+                                alerting, and tamper-resistant audit trails — enabling proactive risk governance
+                                instead of
+                                after-the-fact compliance checks.</p>
+                        </div>
+
+                        <div class="info-cards-grid" style="margin-top:20px">
+                            <div class="info-card">
+                                <div class="info-card-icon">🎯</div>
+                                <h4>Vision</h4>
+                                <p>To create an industry-standard framework for automated third-party risk
+                                    monitoring that
+                                    combines artificial intelligence, real-time analytics, and blockchain-backed
+                                    governance
+                                    for
+                                    complete supply chain cyber resilience.</p>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-icon">💡</div>
+                                <h4>Innovation</h4>
+                                <p>CRAG bridges the gap between traditional periodic assessments and the need for
+                                    continuous
+                                    intelligence. By simulating vendor risk dynamics in real-time, security teams
+                                    gain
+                                    predictive visibility into their vendor ecosystem.</p>
+                            </div>
+                        </div>
+
+                        <div class="info-cards-grid" style="margin-top:0">
+                            <div class="info-card">
+                                <div class="info-card-icon">🏗️</div>
+                                <h4>Key Capabilities</h4>
+                                <ul class="help-steps">
+                                    <li>Centralized vendor registry with dynamic categorization</li>
+                                    <li>Continuous AI-simulated risk scoring (0–100 scale)</li>
+                                    <li>Real-time executive dashboard with live analytics</li>
+                                    <li>Automated high-risk alerting and notification</li>
+                                    <li>Append-only audit trail for regulatory compliance</li>
+                                </ul>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-icon">📊</div>
+                                <h4>Impact Metrics</h4>
+                                <div class="impact-grid">
+                                    <div class="impact-item"><span class="impact-num">10s</span><span
+                                            class="impact-label">Risk
+                                            Update Cycle</span></div>
+                                    <div class="impact-item"><span class="impact-num">100%</span><span
+                                            class="impact-label">Automation Coverage</span></div>
+                                    <div class="impact-item"><span class="impact-num">24/7</span><span
+                                            class="impact-label">Continuous Monitoring</span></div>
+                                    <div class="impact-item"><span class="impact-num">0</span><span
+                                            class="impact-label">Manual
+                                            Intervention</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ─── CONTACT PANE ───────────────────────────────── -->
+                <section class="pane" id="pane-contact">
+                    <div class="page-hero">
+                        <span class="hero-icon">✉️</span>
+                        <h2>Contact Us</h2>
+                        <p>Get in touch with the CRAG team</p>
+                    </div>
+
+                    <div class="info-cards-grid">
+                        <div class="info-card contact-form-card">
+                            <h4>Send a Message</h4>
+                            <form id="contact-form" autocomplete="off">
+                                <div class="field" style="margin-bottom:14px">
+                                    <label for="c-name">Your Name</label>
+                                    <input id="c-name" type="text" placeholder="John Doe" required />
+                                </div>
+                                <div class="field" style="margin-bottom:14px">
+                                    <label for="c-email">Email Address</label>
+                                    <input id="c-email" type="email" placeholder="john@example.com" required />
+                                </div>
+                                <div class="field" style="margin-bottom:14px">
+                                    <label for="c-subject">Subject</label>
+                                    <select id="c-subject">
+                                        <option>General Inquiry</option>
+                                        <option>Technical Support</option>
+                                        <option>Partnership</option>
+                                        <option>Bug Report</option>
+                                        <option>Feature Request</option>
+                                    </select>
+                                </div>
+                                <div class="field" style="margin-bottom:14px">
+                                    <label for="c-msg">Message</label>
+                                    <textarea id="c-msg" rows="4" placeholder="Your message..." required
+                                        style="width:100%;padding:10px 14px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:var(--surface-3);color:var(--text);font:500 .88rem 'Inter',sans-serif;resize:vertical"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">📩 Send Message</button>
+                            </form>
+                        </div>
+                        <div class="info-card">
+                            <h4>Contact Information</h4>
+                            <div class="contact-info-list">
+                                <div class="contact-row"><span class="contact-icon">📧</span>
+                                    <div><strong>Email</strong><br><span
+                                            style="color:var(--accent)">crag.monitor@gmail.com</span>
+                                    </div>
+                                </div>
+                                <div class="contact-row"><span class="contact-icon">🌐</span>
+                                    <div><strong>Website</strong><br><a href="https://progvision.in/" target="_blank"
+                                            style="color:var(--accent);text-decoration:none">progvision.in</a>
+                                    </div>
+                                </div>
+                                <div class="contact-row"><span class="contact-icon">📍</span>
+                                    <div><strong>Location</strong><br><span style="color:var(--text-dim)">Hyderabad,
+                                            India</span></div>
+                                </div>
+                                <div class="contact-row"><span class="contact-icon">⏰</span>
+                                    <div><strong>Response Time</strong><br><span style="color:var(--text-dim)">Within 24
+                                            hours</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ─── TERMS & PRIVACY PANE ───────────────────────── -->
+                <section class="pane" id="pane-terms">
+                    <div class="page-hero">
+                        <span class="hero-icon">📄</span>
+                        <h2>Terms & Privacy Policy</h2>
+                        <p>Legal information and data handling practices</p>
+                    </div>
+
+                    <div class="legal-content">
+                        <div class="card legal-card">
+                            <h3>📜 Terms of Service</h3>
+                            <div class="legal-section">
+                                <h4>1. Acceptance of Terms</h4>
+                                <p>By accessing the CRAG Vendor Risk Monitoring System, you agree to be bound by
+                                    these
+                                    terms.
+                                    This prototype is provided for educational and research purposes as part of the
+                                    CRAG
+                                    framework validation.</p>
+                            </div>
+                            <div class="legal-section">
+                                <h4>2. Use of Service</h4>
+                                <p>CRAG is a Phase-1 prototype designed for vendor risk monitoring demonstration.
+                                    The risk
+                                    scores generated are simulations and should not be used as the sole basis for
+                                    business
+                                    decisions. The system is intended for proof-of-concept validation only.</p>
+                            </div>
+                            <div class="legal-section">
+                                <h4>3. Data Handling</h4>
+                                <p>All vendor data is stored locally in a SQLite database. No data is transmitted to
+                                    external
+                                    servers. The audit log provides a complete, append-only trail of all system
+                                    operations
+                                    for
+                                    transparency.</p>
+                            </div>
+                            <div class="legal-section">
+                                <h4>4. Intellectual Property</h4>
+                                <p>The CRAG framework, its architecture, and associated documentation are
+                                    proprietary. The
+                                    system is developed as part of an academic research project.</p>
+                            </div>
+                        </div>
+
+                        <div class="card legal-card" style="margin-top:20px">
+                            <h3>🔒 Privacy Policy</h3>
+                            <div class="legal-section">
+                                <h4>Data Collection</h4>
+                                <p>CRAG collects only the vendor information you explicitly provide through the
+                                    onboarding
+                                    form.
+                                    This includes vendor name, category, criticality level, and operational status.
+                                    No
+                                    personal
+                                    user data is collected.</p>
+                            </div>
+                            <div class="legal-section">
+                                <h4>Data Storage</h4>
+                                <p>All data is stored locally on your machine in a SQLite database file
+                                    (<code>vendors.db</code>). No cloud services or external databases are used. You
+                                    maintain
+                                    full control over your data.</p>
+                            </div>
+                            <div class="legal-section">
+                                <h4>Data Retention</h4>
+                                <p>Data persists in the local database until manually deleted. The audit log is
+                                    designed as
+                                    an
+                                    append-only ledger and is not intended for deletion, aligning with the CRAG
+                                    governance
+                                    framework.</p>
+                            </div>
+                            <div class="legal-section">
+                                <h4>Third-Party Sharing</h4>
+                                <p>CRAG does not share any data with third parties. The system operates entirely on
+                                    localhost
+                                    with no external API calls or data transmissions.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ─── DEVELOPER PANE ─────────────────────────────── -->
+                <section class="pane" id="pane-developer">
+                    <div class="page-hero">
+                        <span class="hero-icon">👨‍💻</span>
+                        <h2>Developer</h2>
+                        <p>Meet the mind behind CRAG</p>
+                    </div>
+
+                    <div class="developer-profile">
+                        <div class="dev-card">
+                            <div class="dev-avatar">PG</div>
+                            <h3 class="dev-name">P Ganesh Krishna Reddy</h3>
+                            <p class="dev-title">Full-Stack Developer & Cybersecurity Researcher</p>
+                            <p class="dev-bio">Passionate about building intelligent systems at the intersection of
+                                cybersecurity and AI. The CRAG prototype is part of ongoing research into automated
+                                third-party
+                                risk management and governance frameworks.</p>
+                            <div class="dev-skills">
+                                <span class="skill-tag">Python</span>
+                                <span class="skill-tag">FastAPI</span>
+                                <span class="skill-tag">JavaScript (ES6+)</span>
+                                <span class="skill-tag">SQLAlchemy</span>
+                                <span class="skill-tag">Cybersecurity</span>
+                                <span class="skill-tag">Machine Learning</span>
+                                <span class="skill-tag">Vercel Deployment</span>
+                                <span class="skill-tag">TPRM</span>
+                            </div>
+                            <div class="dev-links">
+                                <a href="https://pganeshkrishnareddy.vercel.app/" target="_blank" class="dev-link">🌐
+                                    Portfolio</a>
+                                <a href="https://www.linkedin.com/in/pganeshkrishnareddy/" target="_blank"
+                                    class="dev-link">💼
+                                    LinkedIn</a>
+                                <a href="https://github.com/ganeshkrishnareddy" target="_blank" class="dev-link">🐙
+                                    GitHub</a>
+                            </div>
+                        </div>
+
+                        <div class="info-cards-grid" style="margin-top:20px">
+                            <div class="info-card">
+                                <div class="info-card-icon">🏗️</div>
+                                <h4>Development Phases</h4>
+                                <ul class="help-steps">
+                                    <li><strong>Phase 1: Prototype</strong> — AI risk simulation & live dashboards
+                                        (Current).</li>
+                                    <li><strong>Phase 2: MVP</strong> — Data integrations, multi-tenancy & reporting.
+                                    </li>
+                                    <li><strong>Phase 3: Enterprise</strong> — Blockchain auditing & predictive
+                                        analytics.</li>
+                                </ul>
+                            </div>
+                            <div class="info-card">
+                                <div class="info-card-icon">🧠</div>
+                                <h4>Risk Scoring Logic</h4>
+                                <ul class="help-steps">
+                                    <li><strong>Baseline</strong> — Derived from Criticality & Category weights.</li>
+                                    <li><strong>Dynamic</strong> — Real-time recalculation using AI-simulated walks.
+                                    </li>
+                                    <li><strong>Thresholds</strong> — Automated alerts when risk > 70 (Critical).</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+        </main>
+
+        <!-- ─── CHATBOT WIDGET ─────────────────────────────────── -->
+        <div class="chat-fab" id="chat-fab" title="CRAG Assistant">💬</div>
+        <div class="chat-window" id="chat-window">
+            <div class="chat-header">
+                <div class="chat-header-left"><span class="chat-avatar">🤖</span>
+                    <div><strong>CRAG Assistant</strong><br><small style="color:var(--low)">● Online</small></div>
+                </div>
+                <button class="chat-close" id="chat-close">✕</button>
+            </div>
+            <div class="chat-body" id="chat-body">
+                <div class="chat-msg bot">
+                    <div class="chat-bubble">👋 Hi! I'm the CRAG Assistant. Ask me about vendor risk, how the system
+                        works,
+                        or any features. Try these:<br><br>
+                        <button class="chat-quick" onclick="chatQuick('What is CRAG?')">What is CRAG?</button>
+                        <button class="chat-quick" onclick="chatQuick('How does risk scoring work?')">Risk
+                            Scoring</button>
+                        <button class="chat-quick" onclick="chatQuick('What are the features?')">Features</button>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-wrap">
+                <input type="text" id="chat-input" placeholder="Ask me anything..." autocomplete="off" />
+                <button class="chat-send" id="chat-send">➤</button>
+            </div>
+        </div>
+
+        <!-- ─── VENDOR DETAIL MODAL ──────────────────────────── -->
+        <div class="modal-overlay" id="vendor-modal">
+            <div class="modal">
+                <button class="modal-close" id="modal-close">✕</button>
+
+                <!-- Modal Header -->
+                <div class="modal-header" id="modal-header">
+                    <div class="modal-vendor-icon" id="modal-icon">🏢</div>
+                    <div>
+                        <h2 class="modal-vendor-name" id="modal-name">—</h2>
+                        <span class="modal-vendor-cat" id="modal-cat">—</span>
+                    </div>
+                    <span class="risk-pill" id="modal-risk-pill">—</span>
+                </div>
+
+                <!-- Tab Nav -->
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-mtab="overview">Overview</button>
+                    <button class="modal-tab" data-mtab="risk">Risk Analysis</button>
+                    <button class="modal-tab" data-mtab="alerts">Alert History</button>
+                    <button class="modal-tab" data-mtab="trail">Audit Trail</button>
+                </div>
+
+                <!-- Tab: Overview -->
+                <div class="modal-pane active" id="mtab-overview">
+                    <div class="modal-info-grid">
+                        <div class="info-block">
+                            <span class="info-label">Vendor ID</span>
+                            <span class="info-value" id="modal-id">—</span>
+                        </div>
+                        <div class="info-block">
+                            <span class="info-label">Category</span>
+                            <span class="info-value" id="modal-category">—</span>
+                        </div>
+                        <div class="info-block">
+                            <span class="info-label">Criticality</span>
+                            <span class="info-value" id="modal-criticality">—</span>
+                        </div>
+                        <div class="info-block">
+                            <span class="info-label">Status</span>
+                            <span class="info-value" id="modal-status">—</span>
+                        </div>
+                        <div class="info-block">
+                            <span class="info-label">Onboarded</span>
+                            <span class="info-value" id="modal-created">—</span>
+                        </div>
+                        <div class="info-block">
+                            <span class="info-label">Last Updated</span>
+                            <span class="info-value" id="modal-updated">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Risk Gauge -->
+                    <div class="modal-risk-section">
+                        <h4>Current Risk Assessment</h4>
+                        <div class="risk-gauge-wrap">
+                            <div class="risk-gauge">
+                                <svg viewBox="0 0 120 70" class="gauge-svg">
+                                    <path d="M10,65 A50,50 0 0,1 110,65" fill="none" stroke="var(--surface-3)"
+                                        stroke-width="10" stroke-linecap="round" />
+                                    <path d="M10,65 A50,50 0 0,1 110,65" fill="none" stroke-width="10"
+                                        stroke-linecap="round" id="gauge-arc" stroke="var(--low)" stroke-dasharray="157"
+                                        stroke-dashoffset="157" />
+                                </svg>
+                                <div class="gauge-score" id="gauge-score">0</div>
+                                <div class="gauge-label" id="gauge-label">Low Risk</div>
+                            </div>
+                        </div>
+                        <p class="risk-explanation" id="risk-explanation"></p>
+                    </div>
+                </div>
+
+                <!-- Tab: Risk Analysis -->
+                <div class="modal-pane" id="mtab-risk">
+                    <div class="modal-risk-details">
+                        <div class="risk-factor">
+                            <span class="rf-icon">📊</span>
+                            <div>
+                                <span class="rf-title">Dynamic Score</span>
+                                <span class="rf-desc">AI-simulated risk score recalculated every 10 seconds using
+                                    weighted
+                                    random-walk with mean-reversion.</span>
+                            </div>
+                            <span class="rf-value" id="rf-score">—</span>
+                        </div>
+                        <div class="risk-factor">
+                            <span class="rf-icon">🎯</span>
+                            <div>
+                                <span class="rf-title">Risk Classification</span>
+                                <span class="rf-desc">Low (0–40) · Medium (41–70) · High (71–100)</span>
+                            </div>
+                            <span class="rf-value" id="rf-level">—</span>
+                        </div>
+                        <div class="risk-factor">
+                            <span class="rf-icon">⚡</span>
+                            <div>
+                                <span class="rf-title">Criticality Rating</span>
+                                <span class="rf-desc">Business impact classification assigned during onboarding.</span>
+                            </div>
+                            <span class="rf-value" id="rf-crit">—</span>
+                        </div>
+                        <div class="risk-factor">
+                            <span class="rf-icon">🔔</span>
+                            <div>
+                                <span class="rf-title">Total Alerts Triggered</span>
+                                <span class="rf-desc">Number of times this vendor crossed the high-risk threshold
+                                    (>70).</span>
+                            </div>
+                            <span class="rf-value" id="rf-alerts">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Alert History -->
+                <div class="modal-pane" id="mtab-alerts">
+                    <div class="modal-alert-list" id="modal-alert-list">
+                        <p class="empty-state">No alerts for this vendor.</p>
+                    </div>
+                </div>
+
+                <!-- Tab: Audit Trail -->
+                <div class="modal-pane" id="mtab-trail">
+                    <div class="table-wrap">
+                        <table class="modal-audit-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-audit-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /app-shell -->
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

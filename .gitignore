@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Database
+# vendors.db (Excluding by default, but keeping if it's a prototype. User might want it.)
+
+# IDE
+.vscode/
+.idea/
+
+# Distribution / Build
+build/
+dist/
+*.egg-info/
