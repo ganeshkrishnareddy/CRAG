@@ -20,42 +20,44 @@ scheduler = BackgroundScheduler()
 engine_paused = False  # module-level flag
 
 
+# ── Initialize Database (Module level for Serverless) ─────
+Base.metadata.create_all(bind=engine)
+
+db = SessionLocal()
+try:
+    if db.query(Vendor).count() == 0:
+        vendors = [
+            {"name": "Acme Cloud Services", "category": "Cloud Provider", "criticality": "High", "status": "Active"},
+            {"name": "SecurePay Inc", "category": "Payment Processor", "criticality": "Critical", "status": "Active"},
+            {"name": "DataMinds Analytics", "category": "Data Analytics", "criticality": "Medium", "status": "Active"},
+            {"name": "ProgVision", "category": "Consulting", "criticality": "Low", "status": "Active"},
+            {"name": "CyberShield Pro", "category": "Security Vendor", "criticality": "Critical", "status": "Active"},
+        ]
+        for v in vendors:
+            initial_score = round(random.uniform(5, 55), 1)
+            level = "Low" if initial_score <= 40 else ("Medium" if initial_score <= 70 else "High")
+            vendor = Vendor(
+                name=v["name"],
+                category=v["category"],
+                criticality=v["criticality"],
+                status=v["status"],
+                risk_score=initial_score,
+                risk_level=level,
+            )
+            db.add(vendor)
+        try:
+            db.commit()
+        except Exception as e:
+            print(f"Read-only filesystem or DB error: {e}")
+            db.rollback()
+except Exception as e:
+    print(f"Error during DB initialization: {e}")
+finally:
+    db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: create tables + start risk engine
-    Base.metadata.create_all(bind=engine)
-    
-    # Seed vendors for prototype
-    db = SessionLocal()
-    try:
-        if db.query(Vendor).count() == 0:
-            vendors = [
-                {"name": "Acme Cloud Services", "category": "Cloud Provider", "criticality": "High", "status": "Active"},
-                {"name": "SecurePay Inc", "category": "Payment Processor", "criticality": "Critical", "status": "Active"},
-                {"name": "DataMinds Analytics", "category": "Data Analytics", "criticality": "Medium", "status": "Active"},
-                {"name": "ProgVision", "category": "Consulting", "criticality": "Low", "status": "Active"},
-                {"name": "CyberShield Pro", "category": "Security Vendor", "criticality": "Critical", "status": "Active"},
-            ]
-            for v in vendors:
-                initial_score = round(random.uniform(5, 55), 1)
-                level = "Low" if initial_score <= 40 else ("Medium" if initial_score <= 70 else "High")
-                vendor = Vendor(
-                    name=v["name"],
-                    category=v["category"],
-                    criticality=v["criticality"],
-                    status=v["status"],
-                    risk_score=initial_score,
-                    risk_level=level,
-                )
-                db.add(vendor)
-            try:
-                db.commit()
-            except Exception as e:
-                print(f"Read-only filesystem or DB error: {e}")
-                db.rollback()
-    finally:
-        db.close()
-
     # Scheduler might fail or be useless on serverless, but we try
     try:
         scheduler.add_job(update_all_risk_scores, "interval", seconds=10, id="risk_tick")
