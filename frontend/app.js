@@ -1036,6 +1036,50 @@ function populateModal(data) {
         $('#modal-breach').textContent = '—';
     }
 
+    // Force Verify Button Logic
+    const verifyContainer = $('#verify-btn-container');
+    const verifyBtn = $('#btn-manual-verify');
+    if (v.verification === 'Unverified') {
+        verifyContainer.style.display = 'block';
+        verifyBtn.onclick = async () => {
+            if (!confirm(`Are you sure you want to manually verify the domain for ${v.name}?`)) return;
+            try {
+                // Find matching document ID
+                const snap = await db.collection('vendors').where('numId', '==', v.numId).limit(1).get();
+                if (!snap.empty) {
+                    const docId = snap.docs[0].id;
+                    await db.collection('vendors').doc(docId).update({
+                        verification: 'Verified',
+                        'osint.ssl': 'Manually Verified',
+                        'osint.ports': 'Checked (Manual)',
+                        'osint.breach': 'Cleared (Manual)',
+                        updated_at: new Date().toISOString()
+                    });
+
+                    // Add to audit log
+                    const auditId = await getNextId('audit_log');
+                    await db.collection('audit_log').add({
+                        numId: auditId,
+                        vendor_id: v.numId,
+                        vendor_name: v.name,
+                        action: 'VENDOR_VERIFIED',
+                        details: 'Domain manually verified by user',
+                        timestamp: new Date().toISOString()
+                    });
+
+                    toast(`${v.name} has been successfully verified!`);
+                    modal.classList.remove('active');
+                    refreshAll();
+                }
+            } catch (err) {
+                console.error(err);
+                toast('Failed to verify vendor', 'error');
+            }
+        };
+    } else {
+        verifyContainer.style.display = 'none';
+    }
+
     // Risk Gauge
     const score = v.risk_score;
     const arc = $('#gauge-arc');
