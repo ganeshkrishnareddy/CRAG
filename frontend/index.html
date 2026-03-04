@@ -302,6 +302,11 @@
                                             </select>
                                         </div>
                                         <div class="field">
+                                            <label for="v-domain">Vendor Domain</label>
+                                            <input id="v-domain" type="text" placeholder="e.g. securepay.com" required
+                                                autocomplete="off" />
+                                        </div>
+                                        <div class="field">
                                             <label for="v-criticality">Criticality</label>
                                             <select id="v-criticality" required>
                                                 <option value="">Select…</option>
@@ -333,6 +338,7 @@
                                                 <th>ID</th>
                                                 <th>Name</th>
                                                 <th>Category</th>
+                                                <th>Verification</th>
                                                 <th>Criticality</th>
                                                 <th>Score</th>
                                                 <th>Status</th>
@@ -884,6 +890,29 @@
                             </div>
                         </div>
                         <p class="risk-explanation" id="risk-explanation"></p>
+                    </div>
+
+                    <!-- Vendor Intelligence -->
+                    <div class="modal-risk-section" style="margin-top:20px;">
+                        <h4>Vendor Intelligence (External Attack Surface)</h4>
+                        <div class="modal-info-grid" style="margin-top:10px;">
+                            <div class="info-block">
+                                <span class="info-label">Domain</span>
+                                <span class="info-value" id="modal-domain">—</span>
+                            </div>
+                            <div class="info-block">
+                                <span class="info-label">SSL Validity</span>
+                                <span class="info-value" id="modal-ssl">—</span>
+                            </div>
+                            <div class="info-block">
+                                <span class="info-label">Open Ports</span>
+                                <span class="info-value" id="modal-ports">—</span>
+                            </div>
+                            <div class="info-block">
+                                <span class="info-label">Breach History</span>
+                                <span class="info-value" id="modal-breach">—</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

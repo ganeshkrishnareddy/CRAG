@@ -434,6 +434,34 @@ function riskClass(level) {
     return level.toLowerCase();
 }
 
+// ── Vendor Verification Simulator ────────────────────────
+function simulateOSINTVerification(name, domain) {
+    // Basic heuristics for a fake "AI/OSINT scan"
+    const isSuspiciousName = name.length < 3 || /^[0-9]+$/.test(name) || /^[a-z]\1{3,}$/i.test(name);
+    const validDomain = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(domain);
+
+    if (isSuspiciousName || !validDomain) {
+        return {
+            status: 'Unverified',
+            ssl: 'Invalid/Missing',
+            ports: '22, 3389 (Exposed)',
+            breach: 'Unknown entities',
+            domainAge: '< 30 days',
+        };
+    }
+
+    // "Legit" mock data
+    const hasBreach = Math.random() < 0.2; // 20% chance
+    const ports = Math.random() < 0.5 ? '443, 80' : '443';
+    return {
+        status: 'Verified',
+        ssl: 'Valid (RSA 2048)',
+        ports: ports,
+        breach: hasBreach ? '1 known (2021)' : 'None found',
+        domainAge: `${Math.floor(Math.random() * 10 + 2)} years`,
+    };
+}
+
 // ── Vendor Form Submit ───────────────────────────────────
 function initVendorForm() {
     const vf = vendorForm || $('#vendor-form');
@@ -443,24 +471,38 @@ function initVendorForm() {
         const payload = {
             name: $('#v-name').value.trim(),
             category: $('#v-category').value,
+            domain: $('#v-domain').value.trim(),
             criticality: $('#v-criticality').value,
             status: $('#v-status').value,
         };
-        if (!payload.name || !payload.category || !payload.criticality) return;
+
+        // Basic name validation
+        if (!payload.name || payload.name.length < 3 || /^[0-9]+$/.test(payload.name)) {
+            toast('Please enter a valid, descriptive vendor name.', 'error');
+            return;
+        }
+
+        if (!payload.domain || !payload.category || !payload.criticality) return;
+
         try {
             const numId = await getNextId('vendors');
             const initialScore = Math.round((Math.random() * 50 + 5) * 10) / 10;
             const level = initialScore <= 40 ? "Low" : (initialScore <= 70 ? "Medium" : "High");
             const now = new Date().toISOString();
 
+            const osintData = simulateOSINTVerification(payload.name, payload.domain);
+
             await db.collection('vendors').add({
                 numId,
                 name: payload.name,
+                domain: payload.domain,
                 category: payload.category,
                 criticality: payload.criticality,
                 status: payload.status,
                 risk_score: initialScore,
                 risk_level: level,
+                verification: osintData.status,
+                osint: osintData,
                 created_at: now,
                 updated_at: now,
             });
@@ -524,11 +566,15 @@ function renderVendorTable(vendors) {
         return;
     }
     const isAdmin = currentUser && currentUser.role === 'Admin';
-    vendorTbody.innerHTML = vendors.map(v => `
+    vendorTbody.innerHTML = vendors.map(v => {
+        const vbadge = v.verification === 'Verified' ? '<span class="badge-verified">✔ Verified</span>' : '<span class="badge-unverified">⚠ Unverified</span>';
+
+        return `
     <tr>
       <td>${v.numId || v.id}</td>
       <td style="color:var(--text);font-weight:600">${v.name}</td>
       <td>${v.category}</td>
+      <td>${vbadge}</td>
       <td>${v.criticality}</td>
       <td>${v.status}</td>
       <td>
@@ -543,8 +589,8 @@ function renderVendorTable(vendors) {
       <td>
         ${isAdmin ? `<button class="btn btn-danger" onclick="deleteVendor(${v.numId || 0},'${v.name.replace(/'/g, "\\'")}')">✕ Remove</button>` : `<button class="btn btn-outline" onclick="openVendorModal(${v.numId || 0})">View Details</button>`}
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+    }).join('');
 }
 
 // ── Render: Live Vendor Cards ────────────────────────────
@@ -648,7 +694,7 @@ function renderAlerts(alerts) {
         return;
     }
     alertList.innerHTML = alerts.slice(0, 100).map(a => `
-    <div class="alert-item clickable-row" style="cursor:pointer" onclick="openVendorModal(${a.vendor_id || 0})">
+        < div class="alert-item clickable-row" style = "cursor:pointer" onclick = "openVendorModal(${a.vendor_id || 0})" >
       <div class="alert-icon">🔴</div>
       <div class="alert-body">
         <div class="alert-msg">${a.message}</div>
@@ -658,8 +704,8 @@ function renderAlerts(alerts) {
           <span>${fmtTime(a.created_at)}</span>
         </div>
       </div>
-    </div>
-  `).join('');
+    </div >
+        `).join('');
 }
 
 // ── Render: Audit Log ────────────────────────────────────
@@ -669,14 +715,14 @@ function renderAuditLog(logs) {
         return;
     }
     auditTbody.innerHTML = logs.slice(0, 150).map(l => `
-    <tr>
+        < tr >
       <td>${l.numId || l.id}</td>
       <td style="font-variant-numeric:tabular-nums">${fmtTime(l.timestamp)}</td>
       <td style="font-weight:600;color:var(--text)">${l.vendor_name}</td>
       <td><span style="color:var(--accent);font-weight:600">${l.action}</span></td>
       <td>${l.details || '—'}</td>
-    </tr>
-  `).join('');
+    </tr >
+        `).join('');
 }
 
 // ── KPI Update ───────────────────────────────────────────
@@ -851,13 +897,13 @@ function switchView(paneId) {
     const titleEl = $('#page-title');
 
     navButtons.forEach(b => b.classList.toggle('active', b.dataset.pane === paneId));
-    panesList.forEach(p => p.classList.toggle('active', p.id === `pane-${paneId}`));
+    panesList.forEach(p => p.classList.toggle('active', p.id === `pane - ${paneId} `));
 
     // Update title
     const targetBtn = Array.from(navButtons).find(b => b.dataset.pane === paneId);
     if (titleEl && targetBtn) {
         if (currentUser && currentUser.role === 'Vendor' && paneId === 'dashboard') {
-            titleEl.textContent = `Dashboard — ${currentUser.name}`;
+            titleEl.textContent = `Dashboard — ${currentUser.name} `;
         } else {
             titleEl.textContent = targetBtn.textContent.trim();
         }
@@ -944,7 +990,7 @@ document.querySelectorAll('.modal-tab').forEach(tab => {
         tab.classList.add('active');
         const target = tab.dataset.mtab;
         document.querySelectorAll('.modal-pane').forEach(p => {
-            p.classList.toggle('active', p.id === `mtab-${target}`);
+            p.classList.toggle('active', p.id === `mtab - ${target} `);
         });
     });
 });
@@ -961,16 +1007,34 @@ function populateModal(data) {
     $('#modal-cat').textContent = `${v.category} · ${v.criticality} Criticality`;
 
     const rp = $('#modal-risk-pill');
-    rp.textContent = `${v.risk_score} — ${v.risk_level}`;
-    rp.className = `risk-pill ${riskClass(v.risk_level)}`;
+    rp.textContent = `${v.risk_score} — ${v.risk_level} `;
+    rp.className = `risk - pill ${riskClass(v.risk_level)} `;
 
     // Overview — info grid
-    $('#modal-id').textContent = `#${v.numId || v.id}`;
+    $('#modal-id').textContent = `#${v.numId || v.id} `;
     $('#modal-category').textContent = v.category;
     $('#modal-criticality').textContent = v.criticality;
     $('#modal-status').textContent = v.status;
     $('#modal-created').textContent = v.created_at ? fmtTime(v.created_at) : '—';
     $('#modal-updated').textContent = v.updated_at ? fmtTime(v.updated_at) : '—';
+
+    // Vendor Intelligence
+    if (v.osint) {
+        $('#modal-domain').innerHTML = `< a href = "https://${v.domain}" target = "_blank" style = "color:var(--accent);text-decoration:none" > ${v.domain}</a > `;
+        $('#modal-ssl').textContent = v.osint.ssl;
+
+        const isExposed = v.osint.ports.includes('22');
+        $('#modal-ports').innerHTML = `< span style = "color:${isExposed ? 'var(--high)' : 'var(--text)'}" > ${v.osint.ports}</span > `;
+
+        const isBreached = v.osint.breach !== 'None found' && v.osint.breach !== 'Unknown entities';
+        $('#modal-breach').innerHTML = `< span style = "color:${isBreached ? 'var(--high)' : 'var(--text)'}" > ${v.osint.breach}</span > `;
+    } else {
+        // Fallback for seeded/legacy vendors
+        $('#modal-domain').textContent = 'Legacy Vendor';
+        $('#modal-ssl').textContent = '—';
+        $('#modal-ports').textContent = '—';
+        $('#modal-breach').textContent = '—';
+    }
 
     // Risk Gauge
     const score = v.risk_score;
@@ -989,7 +1053,7 @@ function populateModal(data) {
     // Risk explanation
     let explanation = '';
     if (v.risk_level === 'High') {
-        explanation = `⚠ ${v.name} is classified as HIGH RISK. Immediate review and mitigation actions are recommended. This vendor's risk score of ${score} exceeds the critical threshold of 70.`;
+        explanation = `⚠ ${v.name} is classified as HIGH RISK.Immediate review and mitigation actions are recommended.This vendor's risk score of ${score} exceeds the critical threshold of 70.`;
     } else if (v.risk_level === 'Medium') {
         explanation = `${v.name} is at MEDIUM RISK with a score of ${score}. Continue monitoring — this vendor may escalate to high risk if conditions deteriorate.`;
     } else {
