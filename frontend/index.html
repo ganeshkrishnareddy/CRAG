@@ -171,6 +171,9 @@
                 <button class="nav-btn" data-pane="audit" id="nav-audit">
                     <span class="nav-icon">📜</span> Audit Log
                 </button>
+                <button class="nav-btn" data-pane="accounts" id="nav-accounts">
+                    <span class="nav-icon">🔑</span> Accounts
+                </button>
                 <div class="nav-divider"></div>
                 <button class="nav-btn" data-pane="help" id="nav-help">
                     <span class="nav-icon">❓</span> Help
@@ -393,6 +396,74 @@
                             </div>
                         </div>
                 </div>
+                </section>
+
+                <!-- ─── ACCOUNTS PANE (Admin Only) ────────────────────── -->
+                <section class="pane" id="pane-accounts">
+                    <div class="page-hero">
+                        <span class="hero-icon">🔑</span>
+                        <h2>Vendor Logins</h2>
+                        <p>Manage authentication credentials and user accounts.</p>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 2fr;gap:20px;align-items:start;">
+
+                        <div class="card p-0" style="padding:24px" id="nav-accounts-add">
+                            <h3 style="margin-top:0;margin-bottom:20px;font-size:1.1rem;color:var(--text)">Create
+                                Account</h3>
+                            <form id="account-form" style="display:flex;flex-direction:column;gap:15px;">
+                                <div class="field">
+                                    <label for="acc-username">Username</label>
+                                    <input id="acc-username" type="text" placeholder="e.g. acmecorp" required
+                                        autocomplete="off" />
+                                </div>
+                                <div class="field">
+                                    <label for="acc-password">Password</label>
+                                    <input id="acc-password" type="text" placeholder="Secret password" required
+                                        autocomplete="off" />
+                                </div>
+                                <div class="field">
+                                    <label for="acc-name">Display Name</label>
+                                    <input id="acc-name" type="text" placeholder="Acme Cloud Services" required
+                                        autocomplete="off" />
+                                </div>
+                                <div class="field">
+                                    <label for="acc-role">Role</label>
+                                    <select id="acc-role" required>
+                                        <option value="Vendor">Vendor</option>
+                                        <option value="Admin">System Admin</option>
+                                    </select>
+                                </div>
+                                <div class="field" id="acc-vendor-id-field">
+                                    <label for="acc-vendorid">Linked Vendor ID</label>
+                                    <input id="acc-vendorid" type="number" placeholder="e.g. 2" required />
+                                </div>
+                                <button type="submit" class="btn btn-primary" id="btn-add-account">+ Add
+                                    Account</button>
+                            </form>
+                        </div>
+
+                        <div class="card p-0">
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="20%">Username</th>
+                                            <th width="20%">Password</th>
+                                            <th width="20%">Name</th>
+                                            <th width="15%">Role</th>
+                                            <th width="10%">Linked ID</th>
+                                            <th width="15%">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="accounts-tbody">
+                                        <!-- Dynamically injected rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
                 </section>
 
                 <!-- ─── HELP PANE ──────────────────────────────────── -->
@@ -1005,7 +1076,7 @@
         const db = firebase.firestore();
         try { firebase.analytics(); } catch (e) { }
     </script>
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=4"></script>
 </body>
 
 </html>

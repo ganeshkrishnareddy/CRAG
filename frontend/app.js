@@ -44,21 +44,18 @@ function initDOMRefs() {
     btnResetAlerts = $('#btn-reset-alerts');
     btnResetAudit = $('#btn-reset-audit');
     engineToggle = $('#engine-toggle');
+
+    // Accounts DOM Refs
+    window.accountForm = $('#account-form');
+    window.accountsTbody = $('#accounts-tbody');
+    window.accRoleSelect = $('#acc-role');
+    window.accVendorIdField = $('#acc-vendor-id-field');
 }
 
 let riskChart = null;
 let previousAlertCount = 0;
 
 // ── Auth & Session Management ────────────────────────────
-const CREDENTIALS = {
-    'admin': { pass: 'crag2026', role: 'Admin', name: 'System Administrator' },
-    'acme': { pass: 'vendor123', role: 'Vendor', vendorId: 2, name: 'Acme Cloud Services' },
-    'securepay': { pass: 'vendor123', role: 'Vendor', vendorId: 3, name: 'SecurePay Inc' },
-    'dataminds': { pass: 'vendor123', role: 'Vendor', vendorId: 4, name: 'DataMinds Analytics' },
-    'progvision': { pass: 'vendor123', role: 'Vendor', vendorId: 5, name: 'ProgVision' },
-    'cybershield': { pass: 'vendor123', role: 'Vendor', vendorId: 6, name: 'CyberShield Pro' }
-};
-
 let currentRole = 'admin'; // active role toggle in login
 let currentUser = JSON.parse(sessionStorage.getItem('crag_user') || 'null');
 
@@ -130,6 +127,7 @@ function showApp() {
         // Hide Admin-only features
         $('#nav-vendors').style.display = 'none';
         $('#nav-audit').style.display = 'none';
+        $('#nav-accounts').style.display = 'none';
 
         const navVendorsAdd = $('#nav-vendors-add');
         if (navVendorsAdd) navVendorsAdd.style.display = 'none';
@@ -139,13 +137,14 @@ function showApp() {
         if (engineToggle) engineToggle.style.display = 'none';
 
         // Redirect to dashboard if on forbidden page
-        if (['vendors', 'audit'].includes($('.nav-btn.active').dataset.pane)) {
+        if (['vendors', 'audit', 'accounts'].includes($('.nav-btn.active').dataset.pane)) {
             $('#nav-dashboard').click();
         }
     } else {
         // Admin View
         $('#nav-vendors').style.display = 'flex';
         $('#nav-audit').style.display = 'flex';
+        $('#nav-accounts').style.display = 'flex';
 
         const navVendorsAdd = $('#nav-vendors-add');
         if (navVendorsAdd) navVendorsAdd.style.display = 'block';
@@ -159,25 +158,37 @@ function showApp() {
     syncEngineStatus();
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     const userEl = loginUser || document.getElementById('login-user');
     const passEl = loginPass || document.getElementById('login-pass');
     const errEl = loginError || document.getElementById('login-error');
     const formEl = loginForm || document.getElementById('login-form');
     if (!userEl || !passEl) return;
-    const user = userEl.value.toLowerCase();
+    const user = userEl.value.toLowerCase().trim();
     const pass = passEl.value;
 
-    if (CREDENTIALS[user] && CREDENTIALS[user].pass === pass) {
-        currentUser = { ...CREDENTIALS[user], username: user };
-        sessionStorage.setItem('crag_user', JSON.stringify(currentUser));
-        showApp();
-        toast(`Welcome back, ${currentUser.name}!`);
-    } else {
+    try {
+        const snap = await db.collection('users').where('username', '==', user).limit(1).get();
+        if (!snap.empty) {
+            const userData = snap.docs[0].data();
+            if (userData.pass === pass) {
+                currentUser = { ...userData, id: snap.docs[0].id };
+                sessionStorage.setItem('crag_user', JSON.stringify(currentUser));
+                showApp();
+                toast(`Welcome back, ${currentUser.name}!`);
+                return;
+            }
+        }
+
+        // Fail case
         if (errEl) errEl.style.display = 'block';
         if (formEl) formEl.classList.add('shake');
         if (formEl) setTimeout(() => formEl.classList.remove('shake'), 400);
+
+    } catch (err) {
+        console.error('Login error:', err);
+        toast('Error connecting to authentication service.', 'error');
     }
 }
 
@@ -288,6 +299,54 @@ function attachGlobalEvents() {
             } catch (e) { console.error('Failed to sync engine state'); }
         });
     }
+
+    // Accounts
+    if (window.accRoleSelect && window.accVendorIdField) {
+        window.accRoleSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'Admin') {
+                window.accVendorIdField.style.display = 'none';
+                $('#acc-vendorid').removeAttribute('required');
+            } else {
+                window.accVendorIdField.style.display = 'flex';
+                $('#acc-vendorid').setAttribute('required', 'true');
+            }
+        });
+    }
+
+    if (window.accountForm) {
+        window.accountForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = $('#acc-username').value.trim().toLowerCase();
+            const pass = $('#acc-password').value;
+            const name = $('#acc-name').value.trim();
+            const role = window.accRoleSelect.value;
+            const vendorId = role === 'Vendor' ? parseInt($('#acc-vendorid').value, 10) : null;
+
+            if (!username || !pass || !name) return;
+
+            try {
+                // Check if username already exists
+                const snap = await db.collection('users').where('username', '==', username).limit(1).get();
+                if (!snap.empty) {
+                    toast('Username already exists!', 'error');
+                    return;
+                }
+
+                await db.collection('users').add({
+                    username, pass, name, role, vendorId,
+                    created_at: new Date().toISOString()
+                });
+
+                toast(`Account ${username} created!`);
+                window.accountForm.reset();
+                window.accRoleSelect.dispatchEvent(new Event('change')); // reset visibility
+                refreshAll();
+            } catch (err) {
+                console.error(err);
+                toast('Failed to create account', 'error');
+            }
+        });
+    }
 }
 window.setLoginRole = setLoginRole;
 window.showLogin = showLogin;
@@ -296,6 +355,17 @@ window.doLogout = doLogout;
 window.showApp = showApp;
 window.openVendorModal = openVendorModal;
 window.deleteVendor = deleteVendor;
+window.deleteAccount = async function (id, username) {
+    if (!confirm(`Delete account "${username}"?`)) return;
+    try {
+        await db.collection('users').doc(id).delete();
+        toast(`Account ${username} deleted.`);
+        refreshAll();
+    } catch (err) {
+        console.error(err);
+        toast('Failed to delete account', 'error');
+    }
+}
 
 // (Navigation, Sidebar, and Admin Controls are handled in attachGlobalEvents above)
 
@@ -356,6 +426,20 @@ async function getNextId(collectionName) {
 // ── Seed Firestore with initial vendors if empty ─────────
 async function seedFirestoreIfEmpty() {
     try {
+        // Seed initial admin user if no users exist
+        const userSnap = await db.collection('users').limit(1).get();
+        if (userSnap.empty) {
+            console.log('[CRAG] Seeding default Admin user...');
+            await db.collection('users').add({
+                username: 'admin',
+                pass: 'crag2026',
+                name: 'System Administrator',
+                role: 'Admin',
+                vendorId: null,
+                created_at: new Date().toISOString()
+            });
+        }
+
         const snap = await db.collection('vendors').limit(1).get();
         if (!snap.empty) return; // already seeded
 
@@ -559,6 +643,46 @@ async function deleteVendor(numId, name) {
     }
 }
 
+// ── Render: Accounts Table ───────────────────────────────
+function renderAccountsTable(users) {
+    if (!window.accountsTbody) return;
+    if (!users.length) {
+        window.accountsTbody.innerHTML = '<tr><td colspan="6" class="empty-state">No accounts found.</td></tr>';
+        return;
+    }
+
+    // Sort users: Admins first, then alphabetical by username
+    const sorted = [...users].sort((a, b) => {
+        if (a.role !== b.role) return a.role === 'Admin' ? -1 : 1;
+        return a.username.localeCompare(b.username);
+    });
+
+    window.accountsTbody.innerHTML = sorted.map(u => {
+        const vendorBadge = u.role === 'Vendor'
+            ? `<span style="color:var(--text);background:var(--surface-3);padding:2px 8px;border-radius:4px;font-size:0.8rem">#${u.vendorId}</span>`
+            : '<span style="color:var(--surface-3)">—</span>';
+
+        const roleBadge = u.role === 'Admin'
+            ? `<span style="color:var(--high);font-weight:600">Admin</span>`
+            : `<span style="color:var(--med)">Vendor</span>`;
+
+        return `
+    <tr>
+      <td style="color:var(--text);font-weight:600">${u.username}</td>
+      <td style="font-family:monospace;color:var(--surface-3)">••••••••</td>
+      <td>${u.name}</td>
+      <td>${roleBadge}</td>
+      <td>${vendorBadge}</td>
+      <td>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteAccount('${u.id}', '${u.username}')" ${u.username === 'admin' ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''}>Delete</button>
+        </div>
+      </td>
+    </tr>
+        `;
+    }).join('');
+}
+
 // ── Render: Vendor Table ─────────────────────────────────
 function renderVendorTable(vendors) {
     if (!vendors.length) {
@@ -746,6 +870,13 @@ async function refreshAll() {
         let vendors = await getCollection('vendors', 'updated_at', 'desc');
         let alerts = await getCollection('alerts', 'created_at', 'desc', 200);
         let logs = await getCollection('audit_log', 'timestamp', 'desc', 300);
+        let users = [];
+
+        // Fetch users only if Admin
+        if (currentUser.role === 'Admin') {
+            users = await getCollection('users', 'created_at', 'desc');
+            renderAccountsTable(users);
+        }
 
         // Role-based filtering (Frontend simulation for Prototype)
         if (currentUser.role === 'Vendor') {
