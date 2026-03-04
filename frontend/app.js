@@ -694,7 +694,7 @@ function renderAlerts(alerts) {
         return;
     }
     alertList.innerHTML = alerts.slice(0, 100).map(a => `
-        < div class="alert-item clickable-row" style = "cursor:pointer" onclick = "openVendorModal(${a.vendor_id || 0})" >
+    <div class="alert-item clickable-row" style="cursor:pointer" onclick="openVendorModal(${a.vendor_id || 0})">
       <div class="alert-icon">🔴</div>
       <div class="alert-body">
         <div class="alert-msg">${a.message}</div>
@@ -704,8 +704,8 @@ function renderAlerts(alerts) {
           <span>${fmtTime(a.created_at)}</span>
         </div>
       </div>
-    </div >
-        `).join('');
+    </div>
+    `).join('');
 }
 
 // ── Render: Audit Log ────────────────────────────────────
@@ -715,14 +715,14 @@ function renderAuditLog(logs) {
         return;
     }
     auditTbody.innerHTML = logs.slice(0, 150).map(l => `
-        < tr >
+    <tr>
       <td>${l.numId || l.id}</td>
       <td style="font-variant-numeric:tabular-nums">${fmtTime(l.timestamp)}</td>
       <td style="font-weight:600;color:var(--text)">${l.vendor_name}</td>
       <td><span style="color:var(--accent);font-weight:600">${l.action}</span></td>
       <td>${l.details || '—'}</td>
-    </tr >
-        `).join('');
+    </tr>
+    `).join('');
 }
 
 // ── KPI Update ───────────────────────────────────────────
