@@ -1020,14 +1020,14 @@ function populateModal(data) {
 
     // Vendor Intelligence
     if (v.osint) {
-        $('#modal-domain').innerHTML = `< a href = "https://${v.domain}" target = "_blank" style = "color:var(--accent);text-decoration:none" > ${v.domain}</a > `;
+        $('#modal-domain').innerHTML = `<a href="https://${v.domain}" target="_blank" style="color:var(--accent);text-decoration:none">${v.domain}</a>`;
         $('#modal-ssl').textContent = v.osint.ssl;
 
         const isExposed = v.osint.ports.includes('22');
-        $('#modal-ports').innerHTML = `< span style = "color:${isExposed ? 'var(--high)' : 'var(--text)'}" > ${v.osint.ports}</span > `;
+        $('#modal-ports').innerHTML = `<span style="color:${isExposed ? 'var(--high)' : 'var(--text)'}">${v.osint.ports}</span>`;
 
         const isBreached = v.osint.breach !== 'None found' && v.osint.breach !== 'Unknown entities';
-        $('#modal-breach').innerHTML = `< span style = "color:${isBreached ? 'var(--high)' : 'var(--text)'}" > ${v.osint.breach}</span > `;
+        $('#modal-breach').innerHTML = `<span style="color:${isBreached ? 'var(--high)' : 'var(--text)'}">${v.osint.breach}</span>`;
     } else {
         // Fallback for seeded/legacy vendors
         $('#modal-domain').textContent = 'Legacy Vendor';
