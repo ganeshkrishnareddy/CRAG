@@ -1,0 +1,33 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "alerts",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "vendor_id",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "created_at",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "audit_log",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "vendor_id",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "timestamp",
+                    "order": "DESCENDING"
+                }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}

@@ -1,9 +1,9 @@
 /* ──────────────────────────────────────────────────────────
-   CRAG — app.js  |  Frontend logic
+   CRAG — app.js  |  Frontend logic (Firebase/Firestore Edition)
    ────────────────────────────────────────────────────────── */
 
-const API = '';  // same origin
-console.log('[CRAG] app.js loaded successfully');
+// db is initialized in index.html before this script loads
+console.log('[CRAG] app.js loaded successfully (Firebase Edition)');
 
 // ── DOM Refs ─────────────────────────────────────────────
 const $ = (s) => document.querySelector(s);
@@ -112,7 +112,14 @@ function showApp() {
 
     // UI adjustments based on role
     const lia = loggedInAs || $('#logged-in-as');
-    if (lia && currentUser) lia.textContent = `Logged in as ${currentUser.name} (${currentUser.role})`;
+    if (lia && currentUser) {
+        lia.textContent = currentUser.role === 'Admin' ? 'System Admin' : currentUser.name;
+    }
+
+    const titleEl = $('#page-title');
+    if (titleEl && currentUser && currentUser.role === 'Vendor') {
+        titleEl.textContent = `Dashboard — ${currentUser.name}`;
+    }
 
     if (currentUser.role === 'Vendor') {
         $('.sidebar-brand').style.background = 'linear-gradient(135deg, var(--accent), var(--low))';
@@ -196,9 +203,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initDOMRefs();
     initChatRefs();
     initVendorForm();
-    initZoom();
     attachGlobalEvents();
     checkInitialAuth();
+
+    // Seed Firestore with initial vendors if empty
+    seedFirestoreIfEmpty();
 });
 
 function attachGlobalEvents() {
@@ -210,18 +219,15 @@ function attachGlobalEvents() {
     navButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const target = btn.dataset.pane;
-            if (!target) return; // skip logout and other non-pane buttons
-            navButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            panesList.forEach(p => p.classList.toggle('active', p.id === `pane-${target}`));
-            if (titleEl) titleEl.textContent = btn.textContent.trim();
-            window.scrollTo(0, 0);
-            const mainEl = document.querySelector('main');
-            if (mainEl) mainEl.scrollTop = 0;
-            if (sidebar) sidebar.classList.remove('active');
-            if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+            if (target) switchView(target);
         });
     });
+
+    // Header Alerts click
+    const headerAlerts = $('#header-alerts');
+    if (headerAlerts) {
+        headerAlerts.addEventListener('click', () => switchView('alerts'));
+    }
 
     // Sidebar Toggle (Mobile)
     if (sidebarToggle) {
@@ -251,7 +257,7 @@ function attachGlobalEvents() {
         btnResetAlerts.addEventListener('click', async () => {
             if (!confirm('Reset all alerts? This action cannot be undone.')) return;
             try {
-                await api('/api/alerts', { method: 'DELETE' });
+                await resetCollection('alerts');
                 toast('All alerts have been cleared');
                 refreshAll();
             } catch (e) { toast('Failed to reset alerts', 'error'); }
@@ -262,7 +268,7 @@ function attachGlobalEvents() {
         btnResetAudit.addEventListener('click', async () => {
             if (!confirm('Reset the entire audit log? This action cannot be undone.')) return;
             try {
-                await api('/api/audit-log', { method: 'DELETE' });
+                await resetCollection('audit_log');
                 toast('Audit log has been cleared');
                 refreshAll();
             } catch (e) { toast('Failed to reset audit log', 'error'); }
@@ -270,12 +276,10 @@ function attachGlobalEvents() {
     }
 
     if (engineToggle) {
-        engineToggle.addEventListener('click', async () => {
-            try {
-                const res = await api('/api/engine/toggle', { method: 'POST' });
-                updateEngineUI(res.paused);
-                toast(res.paused ? '⏸ Risk engine paused' : '▶ Risk engine activated');
-            } catch (e) { toast('Engine toggle failed', 'error'); }
+        engineToggle.addEventListener('click', () => {
+            enginePaused = !enginePaused;
+            updateEngineUI(enginePaused);
+            toast(enginePaused ? '⏸ Risk engine paused' : '▶ Risk engine activated');
         });
     }
 }
@@ -315,19 +319,99 @@ function toast(msg, type = 'success') {
     setTimeout(() => t.remove(), 3000);
 }
 
-// ── API Helpers ──────────────────────────────────────────
-async function api(path, opts = {}) {
-    const res = await fetch(`${API}${path}`, {
-        headers: { 'Content-Type': 'application/json' },
-        ...opts,
-    });
-    if (!res.ok) throw new Error(`API ${res.status}`);
-    if (res.status === 204) return null;
-    return res.json();
+// ══════════════════════════════════════════════════════════
+//  FIRESTORE DATA LAYER (replaces REST API)
+// ══════════════════════════════════════════════════════════
+
+// ── Helper: Get all docs from a collection ───────────────
+async function getCollection(name, orderByField, orderDir = 'desc', limitCount = 500) {
+    let ref = db.collection(name);
+    if (orderByField) ref = ref.orderBy(orderByField, orderDir);
+    if (limitCount) ref = ref.limit(limitCount);
+    const snap = await ref.get();
+    return snap.docs.map(d => ({ id: d.id, _numId: d.data().numId || 0, ...d.data() }));
+}
+
+// ── Helper: Delete all docs in a collection ──────────────
+async function resetCollection(name) {
+    const snap = await db.collection(name).get();
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    await batch.commit();
+}
+
+// ── Helper: Get next numeric ID ──────────────────────────
+async function getNextId(collectionName) {
+    const snap = await db.collection(collectionName).orderBy('numId', 'desc').limit(1).get();
+    if (snap.empty) return 1;
+    return (snap.docs[0].data().numId || 0) + 1;
+}
+
+// ── Seed Firestore with initial vendors if empty ─────────
+async function seedFirestoreIfEmpty() {
+    try {
+        const snap = await db.collection('vendors').limit(1).get();
+        if (!snap.empty) return; // already seeded
+
+        console.log('[CRAG] Seeding Firestore with initial vendors...');
+        const vendors = [
+            { name: "Acme Cloud Services", category: "Cloud Provider", criticality: "High", status: "Active" },
+            { name: "SecurePay Inc", category: "Payment Processor", criticality: "Critical", status: "Active" },
+            { name: "DataMinds Analytics", category: "Data Analytics", criticality: "Medium", status: "Active" },
+            { name: "ProgVision", category: "Consulting", criticality: "Low", status: "Active" },
+            { name: "CyberShield Pro", category: "Security Vendor", criticality: "Critical", status: "Active" },
+        ];
+
+        const batch = db.batch();
+        vendors.forEach((v, i) => {
+            const numId = i + 2; // start from 2 to match original IDs
+            const initialScore = Math.round((Math.random() * 50 + 5) * 10) / 10;
+            const level = initialScore <= 40 ? "Low" : (initialScore <= 70 ? "Medium" : "High");
+            const now = new Date().toISOString();
+            const ref = db.collection('vendors').doc();
+            batch.set(ref, {
+                numId,
+                name: v.name,
+                category: v.category,
+                criticality: v.criticality,
+                status: v.status,
+                risk_score: initialScore,
+                risk_level: level,
+                created_at: now,
+                updated_at: now,
+            });
+        });
+        await batch.commit();
+
+        // Add audit entries for seeded vendors
+        const vendorSnap = await db.collection('vendors').get();
+        const auditBatch = db.batch();
+        let auditId = 1;
+        vendorSnap.docs.forEach(d => {
+            const v = d.data();
+            const ref = db.collection('audit_log').doc();
+            auditBatch.set(ref, {
+                numId: auditId++,
+                vendor_id: v.numId,
+                vendor_name: v.name,
+                action: "VENDOR_CREATED",
+                details: `Category: ${v.category}, Criticality: ${v.criticality}`,
+                timestamp: new Date().toISOString(),
+            });
+        });
+        await auditBatch.commit();
+        console.log('[CRAG] Firestore seeded successfully!');
+
+        // Refresh after seeding
+        if (currentUser) refreshAll();
+    } catch (e) {
+        console.error('[CRAG] Seed error:', e);
+    }
 }
 
 // ── Format Helpers ───────────────────────────────────────
 function fmtTime(iso) {
+    if (!iso) return '—';
     const d = new Date(iso);
     return d.toLocaleString('en-IN', {
         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
@@ -358,24 +442,71 @@ function initVendorForm() {
         };
         if (!payload.name || !payload.category || !payload.criticality) return;
         try {
-            await api('/api/vendors', { method: 'POST', body: JSON.stringify(payload) });
+            const numId = await getNextId('vendors');
+            const initialScore = Math.round((Math.random() * 50 + 5) * 10) / 10;
+            const level = initialScore <= 40 ? "Low" : (initialScore <= 70 ? "Medium" : "High");
+            const now = new Date().toISOString();
+
+            await db.collection('vendors').add({
+                numId,
+                name: payload.name,
+                category: payload.category,
+                criticality: payload.criticality,
+                status: payload.status,
+                risk_score: initialScore,
+                risk_level: level,
+                created_at: now,
+                updated_at: now,
+            });
+
+            // Audit log
+            const auditId = await getNextId('audit_log');
+            await db.collection('audit_log').add({
+                numId: auditId,
+                vendor_id: numId,
+                vendor_name: payload.name,
+                action: "VENDOR_CREATED",
+                details: `Category: ${payload.category}, Criticality: ${payload.criticality}`,
+                timestamp: now,
+            });
+
             vf.reset();
             toast(`${payload.name} onboarded successfully!`);
             refreshAll();
         } catch (err) {
+            console.error(err);
             toast('Failed to add vendor', 'error');
         }
     });
 }
 
 // ── Delete Vendor ────────────────────────────────────────
-async function deleteVendor(id, name) {
+async function deleteVendor(numId, name) {
     if (!confirm(`Delete vendor "${name}"?`)) return;
     try {
-        await api(`/api/vendors/${id}`, { method: 'DELETE' });
+        // Find the Firestore doc by numId
+        const snap = await db.collection('vendors').where('numId', '==', numId).get();
+        if (snap.empty) { toast('Vendor not found', 'error'); return; }
+        const batch = db.batch();
+        snap.docs.forEach(d => batch.delete(d.ref));
+
+        // Audit log
+        const auditId = await getNextId('audit_log');
+        const auditRef = db.collection('audit_log').doc();
+        batch.set(auditRef, {
+            numId: auditId,
+            vendor_id: numId,
+            vendor_name: name,
+            action: "VENDOR_DELETED",
+            details: `Removed vendor ${name}`,
+            timestamp: new Date().toISOString(),
+        });
+
+        await batch.commit();
         toast(`${name} removed`);
         refreshAll();
     } catch (err) {
+        console.error(err);
         toast('Delete failed', 'error');
     }
 }
@@ -389,7 +520,7 @@ function renderVendorTable(vendors) {
     const isAdmin = currentUser && currentUser.role === 'Admin';
     vendorTbody.innerHTML = vendors.map(v => `
     <tr>
-      <td>${v.id}</td>
+      <td>${v.numId || v.id}</td>
       <td style="color:var(--text);font-weight:600">${v.name}</td>
       <td>${v.category}</td>
       <td>${v.criticality}</td>
@@ -404,7 +535,7 @@ function renderVendorTable(vendors) {
       </td>
       <td><span class="risk-pill ${riskClass(v.risk_level)}">${v.risk_level}</span></td>
       <td>
-        ${isAdmin ? `<button class="btn btn-danger" onclick="deleteVendor(${v.id},'${v.name.replace(/'/g, "\\'")}')">✕ Remove</button>` : `<button class="btn btn-outline" onclick="openVendorModal(${v.id})">View Details</button>`}
+        ${isAdmin ? `<button class="btn btn-danger" onclick="deleteVendor(${v.numId || 0},'${v.name.replace(/'/g, "\\'")}')">✕ Remove</button>` : `<button class="btn btn-outline" onclick="openVendorModal(${v.numId || 0})">View Details</button>`}
       </td>
     </tr>
   `).join('');
@@ -491,11 +622,19 @@ function renderChart(stats) {
 function renderAlerts(alerts) {
     // Update badge
     const highCount = alerts.length;
+    const headerAlertCountEl = document.getElementById('header-alert-count');
     if (highCount > 0) {
-        alertCountEl.style.display = 'inline';
-        alertCountEl.textContent = highCount > 99 ? '99+' : highCount;
+        if (alertCountEl) {
+            alertCountEl.style.display = 'inline-block';
+            alertCountEl.textContent = highCount > 99 ? '99+' : highCount;
+        }
+        if (headerAlertCountEl) {
+            headerAlertCountEl.style.display = 'inline-block';
+            headerAlertCountEl.textContent = highCount > 99 ? '99+' : highCount;
+        }
     } else {
-        alertCountEl.style.display = 'none';
+        if (alertCountEl) alertCountEl.style.display = 'none';
+        if (headerAlertCountEl) headerAlertCountEl.style.display = 'none';
     }
 
     if (!alerts.length) {
@@ -503,7 +642,7 @@ function renderAlerts(alerts) {
         return;
     }
     alertList.innerHTML = alerts.slice(0, 100).map(a => `
-    <div class="alert-item">
+    <div class="alert-item clickable-row" style="cursor:pointer" onclick="openVendorModal(${a.vendor_id || 0})">
       <div class="alert-icon">🔴</div>
       <div class="alert-body">
         <div class="alert-msg">${a.message}</div>
@@ -525,7 +664,7 @@ function renderAuditLog(logs) {
     }
     auditTbody.innerHTML = logs.slice(0, 150).map(l => `
     <tr>
-      <td>${l.id}</td>
+      <td>${l.numId || l.id}</td>
       <td style="font-variant-numeric:tabular-nums">${fmtTime(l.timestamp)}</td>
       <td style="font-weight:600;color:var(--text)">${l.vendor_name}</td>
       <td><span style="color:var(--accent);font-weight:600">${l.action}</span></td>
@@ -542,34 +681,30 @@ function updateKPIs(stats) {
     $('#high-risk-count').textContent = stats.high;
 }
 
+// ── Compute Stats from Vendors ───────────────────────────
+function computeStats(vendors) {
+    const low = vendors.filter(v => v.risk_level === 'Low').length;
+    const medium = vendors.filter(v => v.risk_level === 'Medium').length;
+    const high = vendors.filter(v => v.risk_level === 'High').length;
+    return { low, medium, high, total: vendors.length };
+}
+
 // ── Refresh All Data ─────────────────────────────────────
 async function refreshAll() {
     if (!currentUser) return;
     try {
-        let [vendors, stats, alerts, logs] = await Promise.all([
-            api('/api/vendors'),
-            api('/api/stats'),
-            api('/api/alerts'),
-            api('/api/audit-log'),
-        ]);
+        let vendors = await getCollection('vendors', 'updated_at', 'desc');
+        let alerts = await getCollection('alerts', 'created_at', 'desc', 200);
+        let logs = await getCollection('audit_log', 'timestamp', 'desc', 300);
 
         // Role-based filtering (Frontend simulation for Prototype)
         if (currentUser.role === 'Vendor') {
-            vendors = vendors.filter(v => v.id === currentUser.vendorId);
+            vendors = vendors.filter(v => v.numId === currentUser.vendorId);
             alerts = alerts.filter(a => a.vendor_id === currentUser.vendorId);
             logs = logs.filter(l => l.vendor_id === currentUser.vendorId);
-
-            // Adjust stats for vendor view
-            if (vendors.length) {
-                const v = vendors[0];
-                stats = {
-                    total: 1,
-                    low: v.risk_level === 'Low' ? 1 : 0,
-                    medium: v.risk_level === 'Medium' ? 1 : 0,
-                    high: v.risk_level === 'High' ? 1 : 0
-                };
-            }
         }
+
+        const stats = computeStats(vendors);
 
         renderVendorTable(vendors);
         renderLiveVendors(vendors);
@@ -580,56 +715,146 @@ async function refreshAll() {
     } catch (err) { console.error('Refresh fail:', err); }
 }
 
-// ── Reset Alerts ─────────────────────────────────────────
-$('#btn-reset-alerts').addEventListener('click', async () => {
-    if (!confirm('Reset all alerts? This action cannot be undone.')) return;
-    try {
-        await api('/api/alerts', { method: 'DELETE' });
-        toast('All alerts have been cleared');
-        refreshAll();
-    } catch (e) { toast('Failed to reset alerts', 'error'); }
-});
+// ══════════════════════════════════════════════════════════
+//  CLIENT-SIDE RISK ENGINE (replaces Python APScheduler)
+// ══════════════════════════════════════════════════════════
 
-// ── Reset Audit Log ──────────────────────────────────────
-$('#btn-reset-audit').addEventListener('click', async () => {
-    if (!confirm('Reset the entire audit log? This action cannot be undone.')) return;
-    try {
-        await api('/api/audit-log', { method: 'DELETE' });
-        toast('Audit log has been cleared');
-        refreshAll();
-    } catch (e) { toast('Failed to reset audit log', 'error'); }
-});
+let enginePaused = false;
 
-// ── Engine Pause / Resume ────────────────────────────────
-const engineDot = $('#engine-dot');
-const engineLabel = $('#engine-label');
-// liveIndicator is defined globally as engine-status
-
-async function syncEngineStatus() {
-    try {
-        const s = await api('/api/engine/status');
-        updateEngineUI(s.paused);
-    } catch (e) { /* ignore */ }
+function classifyRisk(score) {
+    if (score <= 40) return 'Low';
+    if (score <= 70) return 'Medium';
+    return 'High';
 }
 
-function updateEngineUI(paused) {
-    if (paused) {
-        engineToggle.classList.add('paused');
-        engineLabel.textContent = 'Engine Paused';
-        liveIndicator.textContent = '● PAUSED';
-        liveIndicator.style.color = 'var(--high)';
-    } else {
-        engineToggle.classList.remove('paused');
-        // Assuming `isEngineActive` is meant to be `!paused` based on context
-        if (!paused) {
-            liveIndicator.textContent = '● LIVE';
-            liveIndicator.style.color = 'var(--low)';
+async function updateAllRiskScores() {
+    if (enginePaused) return;
+    if (currentUser && currentUser.role !== 'Admin') return; // Only Admin drives the simulation
+    try {
+        const snap = await db.collection('vendors').where('status', '==', 'Active').get();
+        if (snap.empty) return;
+
+        const batch = db.batch();
+        const now = new Date().toISOString();
+        const auditEntries = [];
+        const alertEntries = [];
+
+        for (const doc of snap.docs) {
+            const v = doc.data();
+            // Weighted random walk: drift ±8, biased slightly toward center
+            const drift = (Math.random() * 16) - 8;
+            // Mean-reversion pull toward 50
+            const pull = (50 - v.risk_score) * 0.05;
+            const newScore = Math.round(Math.max(0, Math.min(100, v.risk_score + drift + pull)) * 10) / 10;
+            const oldLevel = v.risk_level;
+            const newLevel = classifyRisk(newScore);
+
+            batch.update(doc.ref, {
+                risk_score: newScore,
+                risk_level: newLevel,
+                updated_at: now,
+            });
+
+            // Audit log entry — ONLY when risk level changes (optimization)
+            if (oldLevel !== newLevel) {
+                auditEntries.push({
+                    vendor_id: v.numId,
+                    vendor_name: v.name,
+                    action: "RISK_LEVEL_CHANGE",
+                    details: `${oldLevel} → ${newLevel} (Score: ${newScore})`,
+                    timestamp: now,
+                });
+            }
+
+            // Alert ONLY when score newly crosses into High territory
+            if (newScore > 70 && oldLevel !== 'High') {
+                alertEntries.push({
+                    vendor_id: v.numId,
+                    vendor_name: v.name,
+                    risk_score: newScore,
+                    message: `⚠ ${v.name} risk score surged to ${newScore} — classified HIGH RISK`,
+                    created_at: now,
+                });
+            }
         }
+
+        await batch.commit();
+
+        // Write audit entries (in batches)
+        if (auditEntries.length > 0) {
+            let nextAuditId = await getNextId('audit_log');
+            const auditBatch = db.batch();
+            for (const entry of auditEntries) {
+                const ref = db.collection('audit_log').doc();
+                auditBatch.set(ref, { numId: nextAuditId++, ...entry });
+            }
+            await auditBatch.commit();
+        }
+
+        // Write alert entries
+        if (alertEntries.length > 0) {
+            let nextAlertId = await getNextId('alerts');
+            const alertBatch = db.batch();
+            for (const entry of alertEntries) {
+                const ref = db.collection('alerts').doc();
+                alertBatch.set(ref, { numId: nextAlertId++, ...entry });
+            }
+            await alertBatch.commit();
+        }
+
+    } catch (e) {
+        console.error('[CRAG] Risk engine error:', e);
     }
 }
 
-// (engineToggle listener is inside attachGlobalEvents)
-// (syncEngineStatus and refreshAll are called from showApp/checkInitialAuth)
+// ── Engine Status ────────────────────────────────────────
+const engineDot = $('#engine-dot');
+const engineLabel = $('#engine-label');
+
+function syncEngineStatus() {
+    updateEngineUI(enginePaused);
+}
+
+function updateEngineUI(paused) {
+    const emoji = $('#engine-emoji');
+    const toggle = engineToggle || $('#engine-toggle');
+    const label = engineLabel || $('#engine-label');
+
+    if (paused) {
+        if (toggle) toggle.classList.add('paused');
+        if (label) label.textContent = 'Engine Paused';
+        if (emoji) emoji.textContent = '🔴';
+    } else {
+        if (toggle) toggle.classList.remove('paused');
+        if (label) label.textContent = 'Engine Active';
+        if (emoji) emoji.textContent = '🟢';
+    }
+}
+
+function switchView(paneId) {
+    const navButtons = $$('.nav-btn');
+    const panesList = $$('.pane');
+    const titleEl = $('#page-title');
+
+    navButtons.forEach(b => b.classList.toggle('active', b.dataset.pane === paneId));
+    panesList.forEach(p => p.classList.toggle('active', p.id === `pane-${paneId}`));
+
+    // Update title
+    const targetBtn = Array.from(navButtons).find(b => b.dataset.pane === paneId);
+    if (titleEl && targetBtn) {
+        if (currentUser && currentUser.role === 'Vendor' && paneId === 'dashboard') {
+            titleEl.textContent = `Dashboard — ${currentUser.name}`;
+        } else {
+            titleEl.textContent = targetBtn.textContent.trim();
+        }
+    }
+
+    if (window.scrollTo) window.scrollTo(0, 0);
+    const mainEl = document.querySelector('main');
+    if (mainEl) mainEl.scrollTop = 0;
+    if (sidebar) sidebar.classList.remove('active');
+    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+}
 
 
 // ══════════════════════════════════════════════════════════
@@ -652,10 +877,29 @@ const catIcons = {
 };
 
 // ── Open Modal ───────────────────────────────────────────
-async function openVendorModal(vendorId) {
+async function openVendorModal(vendorNumId) {
     try {
-        const data = await api(`/api/vendors/${vendorId}`);
-        populateModal(data);
+        // Find vendor by numId
+        const vendorSnap = await db.collection('vendors').where('numId', '==', vendorNumId).get();
+        if (vendorSnap.empty) { toast('Vendor not found', 'error'); return; }
+        const vendorDoc = vendorSnap.docs[0];
+        const vendor = { id: vendorDoc.id, ...vendorDoc.data() };
+
+        // Get alerts for this vendor
+        const alertSnap = await db.collection('alerts')
+            .where('vendor_id', '==', vendorNumId)
+            .orderBy('created_at', 'desc')
+            .limit(20).get();
+        const alerts = alertSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Get audit logs for this vendor
+        const logSnap = await db.collection('audit_log')
+            .where('vendor_id', '==', vendorNumId)
+            .orderBy('timestamp', 'desc')
+            .limit(30).get();
+        const audit_log = logSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        populateModal({ vendor, alerts, audit_log });
         modal.classList.add('active');
         // reset to overview tab
         document.querySelectorAll('.modal-tab').forEach((t, i) => {
@@ -665,17 +909,18 @@ async function openVendorModal(vendorId) {
             p.classList.toggle('active', i === 0);
         });
     } catch (e) {
+        console.error(e);
         toast('Could not load vendor details', 'error');
     }
 }
 
 // ── Close Modal ──────────────────────────────────────────
-modalClose.addEventListener('click', () => modal.classList.remove('active'));
-modal.addEventListener('click', (e) => {
+if (modalClose) modalClose.addEventListener('click', () => modal.classList.remove('active'));
+if (modal) modal.addEventListener('click', (e) => {
     if (e.target === modal) modal.classList.remove('active');
 });
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') modal.classList.remove('active');
+    if (e.key === 'Escape' && modal) modal.classList.remove('active');
 });
 
 // ── Modal Tab Navigation ─────────────────────────────────
@@ -706,7 +951,7 @@ function populateModal(data) {
     rp.className = `risk-pill ${riskClass(v.risk_level)}`;
 
     // Overview — info grid
-    $('#modal-id').textContent = `#${v.id}`;
+    $('#modal-id').textContent = `#${v.numId || v.id}`;
     $('#modal-category').textContent = v.category;
     $('#modal-criticality').textContent = v.criticality;
     $('#modal-status').textContent = v.status;
@@ -773,7 +1018,7 @@ function populateModal(data) {
     } else {
         matb.innerHTML = logs.map(l => `
       <tr>
-        <td>${l.id}</td>
+        <td>${l.numId || l.id}</td>
         <td style="font-variant-numeric:tabular-nums">${l.timestamp ? fmtTime(l.timestamp) : '—'}</td>
         <td><span style="color:var(--accent);font-weight:600">${l.action}</span></td>
         <td>${l.details || '—'}</td>
@@ -783,7 +1028,6 @@ function populateModal(data) {
 }
 
 // ── Make Vendor Table Rows Clickable ─────────────────────
-// (override renderVendorTable to add click handlers)
 const _origRenderVendorTable = renderVendorTable;
 renderVendorTable = function (vendors) {
     _origRenderVendorTable(vendors);
@@ -791,9 +1035,8 @@ renderVendorTable = function (vendors) {
         if (vendors[i]) {
             tr.classList.add('clickable-row');
             tr.addEventListener('click', (e) => {
-                // Don't open modal if they clicked the delete button
                 if (e.target.closest('.btn-danger')) return;
-                openVendorModal(vendors[i].id);
+                openVendorModal(vendors[i].numId || 0);
             });
         }
     });
@@ -805,7 +1048,7 @@ renderLiveVendors = function (vendors) {
     _origRenderLiveVendors(vendors);
     vendorLive.querySelectorAll('.vendor-live-item').forEach((card, i) => {
         if (vendors[i]) {
-            card.addEventListener('click', () => openVendorModal(vendors[i].id));
+            card.addEventListener('click', () => openVendorModal(vendors[i].numId || 0));
         }
     });
 };
@@ -891,12 +1134,12 @@ const chatResponses = [
 
     {
         keys: ['tech', 'stack', 'architecture', 'built with', 'framework'],
-        answer: '⚙️ CRAG is built with:<br>• <strong>Backend:</strong> Python, FastAPI, SQLAlchemy, APScheduler<br>• <strong>Frontend:</strong> Vanilla HTML/CSS/JS, Chart.js<br>• <strong>Database:</strong> SQLite with append-only audit design<br>• <strong>API:</strong> RESTful with auto-generated OpenAPI docs at <code>/docs</code>'
+        answer: '⚙️ CRAG is built with:<br>• <strong>Backend:</strong> Firebase Firestore (Cloud Database)<br>• <strong>Frontend:</strong> Vanilla HTML/CSS/JS, Chart.js<br>• <strong>Hosting:</strong> Firebase Hosting<br>• <strong>Engine:</strong> Client-side risk simulation with Firestore persistence'
     },
 
     {
         keys: ['dashboard', 'monitor', 'kpi', 'chart'],
-        answer: '📈 The dashboard provides real-time visibility with:<br>• <strong>KPI Cards</strong> — total, low, medium, high risk counts<br>• <strong>Doughnut Chart</strong> — visual risk distribution<br>• <strong>Live Vendor Monitor</strong> — color-coded cards with score bars<br>Data refreshes every 5 seconds!'
+        answer: '📈 The dashboard provides real-time visibility with:<br>• <strong>KPI Cards</strong> — total, low, medium, high risk counts<br>• <strong>Doughnut Chart</strong> — visual risk distribution<br>• <strong>Live Vendor Monitor</strong> — color-coded cards with score bars<br>Data refreshes every 10 seconds!'
     },
 
     {
@@ -976,27 +1219,13 @@ if (contactForm) {
     });
 }
 
-// ── Zoom / Font Scaling Logic ────────────────────────────
-let currentScale = 100;
 
-window.adjustScale = function (delta) {
-    currentScale = Math.max(80, Math.min(150, currentScale + (delta * 10)));
-    document.documentElement.style.fontSize = `${(currentScale / 100) * 16}px`;
-    const zoomDisplay = document.getElementById('zoom-level');
-    if (zoomDisplay) zoomDisplay.textContent = `${currentScale}%`;
-    localStorage.setItem('crag-zoom', currentScale);
-};
-
-function initZoom() {
-    const savedZoom = localStorage.getItem('crag-zoom');
-    if (savedZoom) {
-        currentScale = parseInt(savedZoom);
-        document.documentElement.style.fontSize = `${(currentScale / 100) * 16}px`;
-        const zoomDisplay = document.getElementById('zoom-level');
-        if (zoomDisplay) zoomDisplay.textContent = `${currentScale}%`;
-    }
-}
-
-// ── Auto Refresh ─────────────────────────────────────────
-setInterval(() => { try { refreshAll(); } catch (e) { } }, 10000);
+// ── Auto Refresh + Risk Engine ───────────────────────────
+// Risk engine runs every 15 seconds (optimized from 10s to reduce Firestore writes)
+setInterval(async () => {
+    try {
+        await updateAllRiskScores();
+        await refreshAll();
+    } catch (e) { }
+}, 15000);
 // Initial refresh is handled in checkInitialAuth -> showApp -> refreshAll
