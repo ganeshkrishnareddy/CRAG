@@ -562,7 +562,7 @@ async function deleteVendor(numId, name) {
 // ── Render: Vendor Table ─────────────────────────────────
 function renderVendorTable(vendors) {
     if (!vendors.length) {
-        vendorTbody.innerHTML = '<tr><td colspan="8" class="empty-state">No vendors registered yet.</td></tr>';
+        vendorTbody.innerHTML = '<tr><td colspan="6" class="empty-state">No vendors registered yet.</td></tr>';
         return;
     }
     const isAdmin = currentUser && currentUser.role === 'Admin';
@@ -573,10 +573,8 @@ function renderVendorTable(vendors) {
     <tr>
       <td>${v.numId || v.id}</td>
       <td style="color:var(--text);font-weight:600">${v.name}</td>
-      <td>${v.category}</td>
       <td>${vbadge}</td>
       <td>${v.criticality}</td>
-      <td>${v.status}</td>
       <td>
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="score-bar-wrap">
@@ -1039,7 +1037,7 @@ function populateModal(data) {
     // Force Verify Button Logic
     const verifyContainer = $('#verify-btn-container');
     const verifyBtn = $('#btn-manual-verify');
-    if (v.verification === 'Unverified') {
+    if (v.verification !== 'Verified') {
         verifyContainer.style.display = 'block';
         verifyBtn.onclick = async () => {
             if (!confirm(`Are you sure you want to manually verify the domain for ${v.name}?`)) return;
