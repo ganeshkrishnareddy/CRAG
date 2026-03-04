@@ -276,10 +276,16 @@ function attachGlobalEvents() {
     }
 
     if (engineToggle) {
-        engineToggle.addEventListener('click', () => {
-            enginePaused = !enginePaused;
+        engineToggle.addEventListener('click', async () => {
+            const newState = !enginePaused;
+            // Optimistic UI update
+            enginePaused = newState;
             updateEngineUI(enginePaused);
             toast(enginePaused ? '⏸ Risk engine paused' : '▶ Risk engine activated');
+            // Sync globally
+            try {
+                await db.collection('system').doc('engine').set({ paused: newState });
+            } catch (e) { console.error('Failed to sync engine state'); }
         });
     }
 }
@@ -810,6 +816,14 @@ async function updateAllRiskScores() {
 // ── Engine Status ────────────────────────────────────────
 const engineDot = $('#engine-dot');
 const engineLabel = $('#engine-label');
+
+// Listen to global engine state
+db.collection('system').doc('engine').onSnapshot(doc => {
+    if (doc.exists) {
+        enginePaused = doc.data().paused === true;
+        updateEngineUI(enginePaused);
+    }
+});
 
 function syncEngineStatus() {
     updateEngineUI(enginePaused);
