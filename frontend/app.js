@@ -897,13 +897,13 @@ function switchView(paneId) {
     const titleEl = $('#page-title');
 
     navButtons.forEach(b => b.classList.toggle('active', b.dataset.pane === paneId));
-    panesList.forEach(p => p.classList.toggle('active', p.id === `pane - ${paneId} `));
+    panesList.forEach(p => p.classList.toggle('active', p.id === `pane-${paneId}`));
 
     // Update title
     const targetBtn = Array.from(navButtons).find(b => b.dataset.pane === paneId);
     if (titleEl && targetBtn) {
         if (currentUser && currentUser.role === 'Vendor' && paneId === 'dashboard') {
-            titleEl.textContent = `Dashboard — ${currentUser.name} `;
+            titleEl.textContent = `Dashboard — ${currentUser.name}`;
         } else {
             titleEl.textContent = targetBtn.textContent.trim();
         }
@@ -990,7 +990,7 @@ document.querySelectorAll('.modal-tab').forEach(tab => {
         tab.classList.add('active');
         const target = tab.dataset.mtab;
         document.querySelectorAll('.modal-pane').forEach(p => {
-            p.classList.toggle('active', p.id === `mtab - ${target} `);
+            p.classList.toggle('active', p.id === `mtab-${target}`);
         });
     });
 });
@@ -1007,11 +1007,11 @@ function populateModal(data) {
     $('#modal-cat').textContent = `${v.category} · ${v.criticality} Criticality`;
 
     const rp = $('#modal-risk-pill');
-    rp.textContent = `${v.risk_score} — ${v.risk_level} `;
-    rp.className = `risk - pill ${riskClass(v.risk_level)} `;
+    rp.textContent = `${v.risk_score} — ${v.risk_level}`;
+    rp.className = `risk-pill ${riskClass(v.risk_level)}`;
 
     // Overview — info grid
-    $('#modal-id').textContent = `#${v.numId || v.id} `;
+    $('#modal-id').textContent = `#${v.numId || v.id}`;
     $('#modal-category').textContent = v.category;
     $('#modal-criticality').textContent = v.criticality;
     $('#modal-status').textContent = v.status;
