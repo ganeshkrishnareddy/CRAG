@@ -2552,3 +2552,377 @@ tbody tr.clickable-row:hover {
         gap: 40px;
     }
 }
+
+/* ── Presentation & Architecture Panel ────────────────── */
+#pane-presentation {
+    transition: all 0.3s ease;
+}
+
+#pane-presentation:-webkit-full-screen {
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--surface-1);
+    padding: 40px;
+}
+
+#pane-presentation:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--surface-1);
+    padding: 40px;
+}
+
+#pane-presentation:-webkit-full-screen #pres-wrapper { max-width: 1200px; margin: 0 auto; }
+#pane-presentation:fullscreen #pres-wrapper { max-width: 1200px; margin: 0 auto; }
+
+/* Architecture Diagram */
+.arch-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px 0;
+}
+
+.arch-tier {
+    width: 100%;
+    max-width: 600px;
+    background: var(--surface-3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    position: relative;
+}
+
+.tier-label {
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--surface-1);
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.arch-box {
+    background: var(--surface-1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    padding: 12px 20px;
+    margin: 8px auto;
+    font-size: 0.9rem;
+    color: var(--text);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.arch-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.arch-arrow span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 4px 0;
+    background: var(--surface-2);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.tech-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px;
+    background: var(--surface-3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.9rem;
+    justify-content: center;
+}
+.tech-box span { font-size: 1.4rem; }
+
+/* ── Interactive Slideshow ──────────────────────────────── */
+.slideshow-container {
+    position: relative;
+    width: 100%;
+    /* 16:9 Aspect Ratio within the pane */
+    aspect-ratio: 16 / 9;
+    max-height: 80vh;
+    background: var(--surface-1);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.slideshow-container:-webkit-full-screen {
+    width: 100vw;
+    height: 100vh;
+    max-height: none;
+    aspect-ratio: auto;
+    border-radius: 0;
+    border: none;
+}
+
+.slideshow-container:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    max-height: none;
+    aspect-ratio: auto;
+    border-radius: 0;
+    border: none;
+}
+
+.pres-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 80px;
+    z-index: 1;
+    background: var(--surface-1);
+}
+
+.pres-slide.active {
+    opacity: 1;
+    visibility: visible;
+    z-index: 2;
+}
+
+.slide-content {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.slide-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: var(--text);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 15px;
+    display: inline-block;
+}
+
+.slide-desc {
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    margin-bottom: 30px;
+}
+
+.grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+/* Slideshow UI Additions */
+.slide-sidebar {
+    background: var(--surface-2);
+}
+.slide-sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+.slide-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.slide-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+.sidebar-thumb {
+    padding: 15px 20px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+    transition: background 0.2s, color 0.2s;
+    font-weight: 500;
+}
+.sidebar-thumb:hover {
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+}
+.sidebar-thumb.active {
+    background: rgba(138,43,226,0.15);
+    color: white;
+    font-weight: 700;
+    border-left: 4px solid var(--accent);
+}
+
+/* System Flow Diagram Additions */
+.flow-diagram {
+    padding: 20px;
+}
+.flow-box {
+    background: rgba(255,255,255,0.03);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    color: var(--text);
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    min-width: 250px;
+    text-align: center;
+}
+.flow-arrow {
+    font-size: 1.5rem;
+    color: var(--accent);
+    font-weight: 800;
+}
+
+.slide-label {
+    position: absolute;
+    top: 30px;
+    left: 40px;
+    font-size: 1rem;
+    color: var(--text-dim);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    background: rgba(255,255,255,0.05);
+    padding: 6px 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.slide-nav-text-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.slide-nav-text-btn:hover {
+    color: var(--accent);
+}
+
+/* Timeline Layout Component */
+.timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: rgba(255,255,255,0.1);
+}
+
+.timeline .card {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.timeline .card::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: -26px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--surface-1);
+    border: 2px solid var(--accent);
+}
+
+/* ── SaaS-Style Architecture Diagram ──────────────────────── */
+.saas-diagram-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.saas-layer {
+    width: 100%;
+    max-width: 500px;
+    background: var(--surface-1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.saas-layer-title {
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--surface-3);
+    padding: 2px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    letter-spacing: 1px;
+}
+
+.saas-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-left: 4px solid var(--text-dim);
+    padding: 15px;
+    border-radius: 4px;
+    text-align: left;
+}
+
+.saas-box strong {
+    font-size: 1.1rem;
+    color: var(--text);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.saas-box-desc {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.saas-layer:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+}
+
+.saas-arrow {
+    font-size: 1.2rem;
+    font-family: monospace;
+    font-weight: 800;
+    color: var(--text-dim);
+    margin: 5px 0;
+}

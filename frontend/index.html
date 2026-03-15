@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=2" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 
@@ -174,7 +174,9 @@
                 <button class="nav-btn" data-pane="accounts" id="nav-accounts">
                     <span class="nav-icon">🔑</span> Accounts
                 </button>
-                <div class="nav-divider"></div>
+                <button class="nav-btn" data-pane="architecture" id="nav-architecture">
+                    <span class="nav-icon">🏗️</span> Architecture
+                </button>                <div class="nav-divider"></div>
                 <button class="nav-btn" data-pane="help" id="nav-help">
                     <span class="nav-icon">❓</span> Help
                 </button>
@@ -858,6 +860,117 @@
                                 </ul>
                             </div>
                         </div>
+                </section>
+
+                <!-- ─── ARCHITECTURE PANE (Admin Only) ──────────────── -->
+                <section class="pane" id="pane-architecture">
+                    <div class="container" id="arch-wrapper">
+                        <!-- Title Section -->
+                        <div class="page-hero" style="text-align: center; margin-bottom: 40px;">
+                            <span class="hero-icon" style="margin: 0 auto;">🏗️</span>
+                            <h2 style="font-size: 2.5rem; margin-top: 15px;">CRAG System Architecture</h2>
+                            <p style="font-size: 1.1rem;">End-to-end architecture of the AI-driven vendor risk monitoring platform</p>
+                        </div>
+                        
+                        <!-- Main Layout: Diagram on left, Security on right -->
+                        <div class="saas-arch-layout" style="display: flex; gap: 40px; margin-bottom: 40px; align-items: flex-start; flex-wrap: wrap;">
+                            
+                            <!-- SaaS-Style Architecture Diagram -->
+                            <div class="saas-diagram-container" style="flex: 2; min-width: 400px; background: var(--surface-2); padding: 40px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                                
+                                <!-- Layer 1 -->
+                                <div class="saas-layer">
+                                    <div class="saas-layer-title">🌐 CLIENT LAYER</div>
+                                    <div class="saas-box">
+                                        <strong>🌐 CRAG Dashboard (UI)</strong><br>
+                                        <span class="saas-box-desc">HTML5 / CSS3 / JS<br>Chart.js Visualization</span>
+                                    </div>
+                                </div>
+                                <div class="saas-arrow">↓ REST API ↓</div>
+                                
+                                <!-- Layer 2 -->
+                                <div class="saas-layer">
+                                    <div class="saas-layer-title">⚙ API / APPLICATION LAYER</div>
+                                    <div class="saas-box" style="border-color: var(--accent);">
+                                        <strong>⚙️ FastAPI Backend</strong><br>
+                                        <span class="saas-box-desc">Authentication Routes<br>Vendor Management API<br>Alerts & Audit API</span>
+                                    </div>
+                                </div>
+                                <div class="saas-arrow">↓</div>
+                                
+                                <!-- Layer 3 -->
+                                <div class="saas-layer">
+                                    <div class="saas-layer-title">🧠 PROCESSING LAYER</div>
+                                    <div class="saas-box" style="border-color: var(--med);">
+                                        <strong>🧠 Risk Simulation Engine</strong><br>
+                                        <span class="saas-box-desc">Weighted Risk Algorithm<br>APScheduler (10s cycle)<br>Vendor Monitoring Logic</span>
+                                    </div>
+                                </div>
+                                <div class="saas-arrow">↓</div>
+                                
+                                <!-- Layer 4 -->
+                                <div class="saas-layer">
+                                    <div class="saas-layer-title">🗄 DATA LAYER</div>
+                                    <div class="saas-box" style="border-color: var(--high);">
+                                        <strong>🗄️ SQLite Database</strong><br>
+                                        <span class="saas-box-desc">Vendor Registry<br>Append-Only Audit Logs<br>Alerts Storage</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Side Column -->
+                            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column; gap: 30px;">
+                                <!-- Security Layer -->
+                                <div class="card" style="border-left: 4px solid var(--low);">
+                                    <h3 style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 1.5rem;">🛡️</span> Security Layer</h3>
+                                    <ul class="help-steps mt-3" style="font-size: 1rem; line-height: 1.8;">
+                                        <li>Firebase Authentication</li>
+                                        <li>Role-Based Access Control</li>
+                                        <li>Secure REST APIs</li>
+                                        <li>Immutable Audit Trail</li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Technology Stack Section -->
+                                <div class="info-card">
+                                    <h4>Technology Stack</h4>
+                                    <div class="mt-3" style="line-height:1.9; color: var(--text-dim); font-size: 0.95rem;">
+                                        <strong style="color:var(--text);">Frontend:</strong> HTML5, CSS3, JavaScript, Chart.js<br>
+                                        <strong style="color:var(--text);">Backend:</strong> Python FastAPI<br>
+                                        <strong style="color:var(--text);">Scheduler:</strong> APScheduler<br>
+                                        <strong style="color:var(--text);">Database:</strong> SQLite<br>
+                                        <strong style="color:var(--text);">Authentication:</strong> Firebase Auth
+                                    </div>
+                                </div>
+
+                                <!-- System Metrics Section -->
+                                <div class="card" style="border-left: 4px solid var(--accent); padding: 25px;">
+                                    <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;"><span style="font-size: 1.5rem;">📊</span> System Metrics</h3>
+                                    <div style="display: flex; flex-direction: column; gap: 15px; font-size: 1.1rem; color: var(--text);">
+                                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;"><span>Risk Engine Cycle:</span> <strong style="color: var(--accent);">10 seconds</strong></div>
+                                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;"><span>Vendors Monitored:</span> <strong id="metric-arch-vendors">...</strong></div>
+                                        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;"><span>Alerts Generated:</span> <strong id="metric-arch-alerts">...</strong></div>
+                                        <div style="display: flex; justify-content: space-between;"><span>Audit Log Entries:</span> <strong id="metric-arch-audit">...</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Flow Explanation -->
+                        <div class="card mb-4">
+                            <h3 class="mb-3">Data Flow Explanation</h3>
+                            <p style="color:var(--text-dim); font-size: 1.1rem; line-height: 1.7; border-left: 3px solid var(--accent); padding-left: 20px;">
+                                Vendor data is submitted through the dashboard interface. The FastAPI backend processes the request and stores vendor information in the database. A scheduled risk simulation engine periodically evaluates vendor risk scores and updates the dashboard while generating alerts and append-only audit logs.
+                            </p>
+                        </div>
+
+                        <!-- Powerful Summary Line -->
+                        <div class="text-center" style="margin-top: 50px; margin-bottom: 50px;">
+                            <p style="color:var(--text); font-size:1.4rem; font-weight: 600; line-height:1.6; max-width:900px; margin: 0 auto;">
+                                "CRAG implements a layered architecture enabling continuous vendor risk monitoring through automated scoring, real-time alerting, and secure audit logging."
+                            </p>
+                        </div>
+
                     </div>
                 </section>
 
@@ -1076,7 +1189,7 @@
         const db = firebase.firestore();
         try { firebase.analytics(); } catch (e) { }
     </script>
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 
 </html>

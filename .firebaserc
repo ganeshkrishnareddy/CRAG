@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "crag-monitor"
+  },
+  "targets": {
+    "crag-monitor": {
+      "hosting": {
+        "crag-monitor": [
+          "crag-monitor"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

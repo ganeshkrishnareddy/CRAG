@@ -90,10 +90,10 @@ app.add_middleware(
 # API routes
 app.include_router(router)
 
-# Serve frontend static files
-app.mount("/static", StaticFiles(directory="../frontend"), name="static")
-
 
 @app.get("/")
 async def serve_frontend():
     return FileResponse("../frontend/index.html")
+
+# Serve frontend static files — mount at root LAST so it doesn't override API routes
+app.mount("/", StaticFiles(directory="../frontend"), name="static")

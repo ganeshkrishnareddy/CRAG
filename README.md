@@ -40,6 +40,22 @@ The CRAG engine calculates risk using a weighted dynamic model:
 
 ---
 
+## 📈 Implementation & Progress
+
+As of the current **Phase 1 Prototype**, the following core features have been successfully implemented and validated:
+
+- **Centralized Vendor Registry**: Fully functional vendor onboarding system capturing critical metadata (Category, Criticality, Domain).
+- **Interactive Risk Dashboard**: Comprehensive UI with real-time KPI cards and risk distribution charting (Chart.js integration).
+- **Dynamic Risk Simulation Engine**: APScheduler-driven backend recalculating scores every 10 seconds based on weighted random-walks.
+- **Automated Alerting Pipeline**: Instant threshold detection that accurately logs High-Risk events (Score > 70).
+- **Append-Only Audit Logging**: Tamper-evident ledger recording all state changes and system actions.
+- **Role-Based Views**: Differentiated access and visibility between System Administrators and Vendor Partners.
+- **Refined SaaS UI/UX**: Professional, glassmorphism-styled frontend with system architecture diagrams and technical documentation panes.
+
+*Next Steps:* Preparing for Phase 2 MVP by transitioning from simulated risk scores to integrating external live security feeds and threat intelligence APIs.
+
+---
+
 ## 💻 Technologies Used
 
 -   **Frontend**: HTML5 (Semantic Structure), Vanilla CSS (Glassmorphism UI), JavaScript (ES6+ Logic), [Chart.js](https://www.chartjs.org/) (Data Visualization).

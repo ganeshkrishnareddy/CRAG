@@ -128,6 +128,7 @@ function showApp() {
         $('#nav-vendors').style.display = 'none';
         $('#nav-audit').style.display = 'none';
         $('#nav-accounts').style.display = 'none';
+        $('#nav-architecture').style.display = 'none';
 
         const navVendorsAdd = $('#nav-vendors-add');
         if (navVendorsAdd) navVendorsAdd.style.display = 'none';
@@ -137,7 +138,7 @@ function showApp() {
         if (engineToggle) engineToggle.style.display = 'none';
 
         // Redirect to dashboard if on forbidden page
-        if (['vendors', 'audit', 'accounts'].includes($('.nav-btn.active').dataset.pane)) {
+        if (['vendors', 'audit', 'accounts', 'architecture'].includes($('.nav-btn.active').dataset.pane)) {
             $('#nav-dashboard').click();
         }
     } else {
@@ -145,6 +146,7 @@ function showApp() {
         $('#nav-vendors').style.display = 'flex';
         $('#nav-audit').style.display = 'flex';
         $('#nav-accounts').style.display = 'flex';
+        $('#nav-architecture').style.display = 'flex';
 
         const navVendorsAdd = $('#nav-vendors-add');
         if (navVendorsAdd) navVendorsAdd.style.display = 'block';
@@ -347,6 +349,133 @@ function attachGlobalEvents() {
             }
         });
     }
+
+    // ── Interactive Slideshow Logic ────────────────────────────
+    const slides = $$('.pres-slide');
+    const btnNext = $('#slide-next');
+    const btnPrev = $('#slide-prev');
+    const slideCounter = $('#slide-counter');
+    const slideProgress = $('#slide-progress');
+    const thumbs = $$('.sidebar-thumb');
+    let currentSlide = 0;
+
+    function updateSlides() {
+        if (!slides.length) return;
+        slides.forEach((s, i) => {
+            s.classList.toggle('active', i === currentSlide);
+        });
+        
+        // Update counter text "Slide X / Y"
+        if (slideCounter) {
+            slideCounter.textContent = `Slide ${currentSlide + 1} / ${slides.length}`;
+        }
+        
+        // Update progress bar
+        if (slideProgress) {
+            slideProgress.style.width = ((currentSlide + 1) / slides.length) * 100 + "%";
+        }
+        
+        // Update thumbs
+        if (thumbs.length) {
+            thumbs.forEach((t, i) => t.classList.toggle('active', i === currentSlide));
+        }
+    }
+    
+    // Global goToSlide for inline HTML or direct calls
+    window.goToSlide = function(index) {
+        if (index >= 0 && index < slides.length) {
+            currentSlide = index;
+            updateSlides();
+        }
+    };
+    
+    // Attach listener to thumbs
+    if (thumbs.length) {
+        thumbs.forEach((t, i) => {
+            t.addEventListener('click', () => {
+                window.goToSlide(i);
+            });
+        });
+    }
+
+    // Initial initialization of counter
+    updateSlides();
+
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        updateSlides();
+    }
+
+    function prevSlide() {
+        currentSlide = (currentSlide - 1 + slides.length) % slides.length;
+        updateSlides();
+    }
+
+    if (btnNext) btnNext.addEventListener('click', nextSlide);
+    if (btnPrev) btnPrev.addEventListener('click', prevSlide);
+
+    // Keyboard Navigation for Slideshow
+    document.addEventListener('keydown', (e) => {
+        // Only if presentation pane is active
+        const presPane = $('#pane-presentation');
+        if (presPane && presPane.classList.contains('active')) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            } else if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                const btnFs = $('#btn-fullscreen');
+                if (btnFs) btnFs.click();
+            }
+        }
+    });
+
+    // Fullscreen Toggle for Slideshow specifically
+    const btnFullscreen = $('#btn-fullscreen');
+    if (btnFullscreen) {
+        btnFullscreen.addEventListener('click', () => {
+            const container = $('#slideshow-container');
+            if (!container) return;
+
+            if (!document.fullscreenElement) {
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                }
+                btnFullscreen.innerHTML = '<span style="margin-right: 8px;">✖</span> Exit Presenter Mode';
+                btnFullscreen.title = 'Exit Presenter Mode';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+                btnFullscreen.innerHTML = '<span style="margin-right: 8px;">⛶</span> Presenter Mode';
+                btnFullscreen.title = 'Enter Presenter Mode';
+            }
+        });
+
+        // Listen for ESC key exit
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && btnFullscreen) {
+                btnFullscreen.innerHTML = '<span style="margin-right: 8px;">⛶</span> Presenter Mode';
+                btnFullscreen.title = 'Enter Presenter Mode';
+            }
+        });
+    }
+
+    // Demo Mode Button
+    const btnDemo = $('#btn-demo-mode');
+    if (btnDemo) {
+        btnDemo.addEventListener('click', () => {
+            toast('Simulating Vendor Risk Spikes...', 'error');
+            if (window.simulateDemoSpikes) window.simulateDemoSpikes();
+        });
+    }
 }
 window.setLoginRole = setLoginRole;
 window.showLogin = showLogin;
@@ -360,14 +489,61 @@ window.deleteAccount = async function (id, username) {
     try {
         await db.collection('users').doc(id).delete();
         toast(`Account ${username} deleted.`);
-        refreshAll();
+        window.refreshDashboardData && window.refreshDashboardData();
     } catch (err) {
         console.error(err);
         toast('Failed to delete account', 'error');
     }
 }
 
-// (Navigation, Sidebar, and Admin Controls are handled in attachGlobalEvents above)
+// Demo Simulation
+window.simulateDemoSpikes = async function() {
+    try {
+        const snap = await db.collection('vendors').get();
+        if(snap.empty) return;
+        const vendors = [];
+        snap.forEach(doc => vendors.push({id: doc.id, ...doc.data()}));
+        
+        // Pick 2 random vendors
+        for(let i=0; i<2; i++) {
+            if(vendors.length === 0) break;
+            const idx = Math.floor(Math.random() * vendors.length);
+            const v = vendors.splice(idx, 1)[0];
+            
+            const spike = Math.floor(Math.random() * 25) + 20; // 20-45 spike
+            const newScore = Math.min(100, (v.riskScore || 50) + spike);
+            
+            await db.collection('vendors').doc(v.id).update({
+                riskScore: newScore,
+                lastAssessed: new Date().toISOString()
+            });
+            
+            await db.collection('auditLogs').add({
+                timestamp: new Date().toISOString(),
+                action: 'DEMO SPIKE',
+                details: `Simulated risk spike for ${v.name} (+${spike})`,
+                user: 'System Admin'
+            });
+            
+            if (newScore > 70) {
+                await db.collection('alerts').add({
+                    vendorId: v.id,
+                    vendorName: v.name,
+                    timestamp: new Date().toISOString(),
+                    message: `DEMO ALERT: ${v.name} score spiked to ${newScore}`,
+                    status: 'New'
+                });
+            }
+        }
+        
+        if (typeof refreshAll === 'function') refreshAll();
+        setTimeout(() => toast('Demo Data Processed - Scores Updated', 'warning'), 1500);
+    } catch(e) {
+        console.error(e);
+    }
+};
+
+// (Navigation, Sidebar, and Admin Controls are handled globally)
 
 // ── Clock ────────────────────────────────────────────────
 function tickClock() {
@@ -893,6 +1069,15 @@ async function refreshAll() {
         renderChart(stats);
         renderAlerts(alerts);
         renderAuditLog(logs);
+        
+        // Update Architecture Metrics Panel
+        const archVendors = $('#metric-arch-vendors');
+        const archAlerts = $('#metric-arch-alerts');
+        const archAudit = $('#metric-arch-audit');
+        if (archVendors) archVendors.textContent = vendors.length;
+        if (archAlerts) archAlerts.textContent = alerts.length > 99 ? '99+' : alerts.length;
+        if (archAudit) archAudit.textContent = logs.length;
+        
     } catch (err) { console.error('Refresh fail:', err); }
 }
 
