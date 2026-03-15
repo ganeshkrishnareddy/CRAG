@@ -1,0 +1,50 @@
+﻿{
+  "status": "success",
+  "result": [
+    {
+      "projectId": "eco-quest-project",
+      "projectNumber": "355078949606",
+      "displayName": "ECOQUEST",
+      "name": "projects/eco-quest-project",
+      "resources": {
+        "hostingSite": "eco-quest-project",
+        "realtimeDatabaseInstance": "eco-quest-project-default-rtdb"
+      },
+      "state": "ACTIVE",
+      "etag": "1_d4d4a11f-98a8-453d-a532-82d39358b053"
+    },
+    {
+      "projectId": "sample-firebase-ai-app-85ce7",
+      "projectNumber": "16648004239",
+      "displayName": "Sample Firebase AI App",
+      "name": "projects/sample-firebase-ai-app-85ce7",
+      "resources": {
+        "hostingSite": "sample-firebase-ai-app-85ce7"
+      },
+      "state": "ACTIVE",
+      "etag": "1_a1abbf6c-4a82-4081-b279-2aefe8b4b2d6"
+    },
+    {
+      "projectId": "satya-automobile",
+      "projectNumber": "535611377868",
+      "displayName": "SATYA Automobile ",
+      "name": "projects/satya-automobile",
+      "resources": {
+        "hostingSite": "satya-automobile"
+      },
+      "state": "ACTIVE",
+      "etag": "1_3b0a8d8b-c6ec-4dee-ac6c-098030e233c5"
+    },
+    {
+      "projectId": "studio-1114531950-3cd79",
+      "projectNumber": "285228398765",
+      "displayName": "Firebase app",
+      "name": "projects/studio-1114531950-3cd79",
+      "resources": {
+        "hostingSite": "studio-1114531950-3cd79"
+      },
+      "state": "ACTIVE",
+      "etag": "1_ace2696e-5444-4104-abfe-e39a4bb7d666"
+    }
+  ]
+}

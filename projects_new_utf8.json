@@ -1,0 +1,116 @@
+﻿{
+  "status": "success",
+  "result": [
+    {
+      "projectId": "akhotchips",
+      "projectNumber": "145897131118",
+      "displayName": "A K HotChips",
+      "name": "projects/akhotchips",
+      "resources": {
+        "hostingSite": "akhotchips"
+      },
+      "state": "ACTIVE",
+      "etag": "1_01731ad0-352d-4c09-89f4-8e5a35dc2fe5"
+    },
+    {
+      "projectId": "biographbrand",
+      "projectNumber": "117879920815",
+      "displayName": "BIOGRAPH ",
+      "name": "projects/biographbrand",
+      "resources": {
+        "hostingSite": "biographbrand"
+      },
+      "state": "ACTIVE",
+      "etag": "1_b77e0e37-1b47-4139-8742-22b46513c3ed"
+    },
+    {
+      "projectId": "clean-360",
+      "projectNumber": "899757684622",
+      "displayName": "360 Clean",
+      "name": "projects/clean-360",
+      "resources": {
+        "hostingSite": "clean-360"
+      },
+      "state": "ACTIVE",
+      "etag": "1_d6baa6aa-62bc-4905-888d-187465d72819"
+    },
+    {
+      "projectId": "crag-monitor",
+      "projectNumber": "268276963878",
+      "displayName": "Crag Monitor",
+      "name": "projects/crag-monitor",
+      "resources": {
+        "hostingSite": "crag-monitor"
+      },
+      "state": "ACTIVE",
+      "etag": "1_ece99d5b-cd7c-4454-93bc-870937f73802"
+    },
+    {
+      "projectId": "hey-trader-telugu",
+      "projectNumber": "782861187356",
+      "displayName": "HeyTrader",
+      "name": "projects/hey-trader-telugu",
+      "resources": {
+        "hostingSite": "hey-trader-telugu"
+      },
+      "state": "ACTIVE",
+      "etag": "1_4d664d49-4ce6-48ae-9d14-849154ce3ceb"
+    },
+    {
+      "projectId": "insuranceclaimportal",
+      "projectNumber": "265189984722",
+      "displayName": "Insurance Claim Portal",
+      "name": "projects/insuranceclaimportal",
+      "resources": {
+        "hostingSite": "insuranceclaimportal"
+      },
+      "state": "ACTIVE",
+      "etag": "1_9dc37b4d-2259-4160-a7e0-a6d2dc36bf8e"
+    },
+    {
+      "projectId": "launch-wise",
+      "projectNumber": "472184013445",
+      "displayName": "LaunchWise",
+      "name": "projects/launch-wise",
+      "resources": {
+        "hostingSite": "launch-wise",
+        "realtimeDatabaseInstance": "launch-wise-default-rtdb"
+      },
+      "state": "ACTIVE",
+      "etag": "1_a07e1be6-19ec-46f9-acd5-574ad2b3e1e6"
+    },
+    {
+      "projectId": "mealrouteadmin",
+      "projectNumber": "28799826818",
+      "displayName": "MealRoute",
+      "name": "projects/mealrouteadmin",
+      "resources": {
+        "hostingSite": "mealrouteadmin"
+      },
+      "state": "ACTIVE",
+      "etag": "1_a810f931-f570-4ba8-b4f2-c1d937d1a8d9"
+    },
+    {
+      "projectId": "progvisionlive",
+      "projectNumber": "1091213731972",
+      "displayName": "ProgVision",
+      "name": "projects/progvisionlive",
+      "resources": {
+        "hostingSite": "progvisionlive"
+      },
+      "state": "ACTIVE",
+      "etag": "1_a1ae7653-0536-46e2-bb52-3e37e2e6d77a"
+    },
+    {
+      "projectId": "rajitamess",
+      "projectNumber": "322016976701",
+      "displayName": "Rajita Mess",
+      "name": "projects/rajitamess",
+      "resources": {
+        "hostingSite": "rajitamess"
+      },
+      "state": "ACTIVE",
+      "etag": "1_87e17b36-e76d-415f-8ff3-0e6befe6fdf7"
+    }
+  ]
+}

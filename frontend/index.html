@@ -176,7 +176,11 @@
                 </button>
                 <button class="nav-btn" data-pane="architecture" id="nav-architecture">
                     <span class="nav-icon">🏗️</span> Architecture
-                </button>                <div class="nav-divider"></div>
+                </button>
+                <button class="nav-btn" data-pane="implementation" id="nav-implementation">
+                    <span class="nav-icon">📈</span> Implementation
+                </button>
+                <div class="nav-divider"></div>
                 <button class="nav-btn" data-pane="help" id="nav-help">
                     <span class="nav-icon">❓</span> Help
                 </button>
@@ -971,6 +975,53 @@
                             </p>
                         </div>
 
+                    </div>
+                </section>
+
+                <!-- ─── IMPLEMENTATION PANE (Admin Only) ────────────── -->
+                <section class="pane" id="pane-implementation">
+                    <div class="container">
+                        <div class="page-hero" style="text-align: center; margin-bottom: 40px;">
+                            <span class="hero-icon" style="margin: 0 auto;">📈</span>
+                            <h2 style="font-size: 2.5rem; margin-top: 15px;">Implementation & Progress</h2>
+                            <p style="font-size: 1.1rem;">A comprehensive look at our development journey and future roadmap</p>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 30px; max-width: 900px; margin: 0 auto;">
+                            
+                            <!-- What We Did Till Now -->
+                            <div class="card" style="border-left: 4px solid var(--accent); padding: 30px;">
+                                <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;"><span style="font-size: 1.5rem;">🏗️</span> What We Have Developed</h3>
+                                <p style="color:var(--text-dim); font-size: 1.1rem; line-height: 1.8;">
+                                    We have successfully built a real-time third-party vendor risk monitoring platform (Phase 1 Prototype). Our implementation includes a <strong>Centralized Vendor Registry</strong> for seamless onboarding, a <strong>Dynamic Live Dashboard</strong> for risk visibility, and a robust <strong>Role-Based Access Control</strong> system that isolates Vendor views from System Administrator visibility. We also implemented an <strong>Append-Only Audit Log</strong> to track all major events and ensure governance compliance over time.
+                                </p>
+                            </div>
+
+                            <!-- Why This App and Tools -->
+                            <div class="card" style="border-left: 4px solid var(--low); padding: 30px;">
+                                <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;"><span style="font-size: 1.5rem;">🛠️</span> Why This App & Tools?</h3>
+                                <p style="color:var(--text-dim); font-size: 1.1rem; line-height: 1.8;">
+                                    <strong>The Problem:</strong> Traditional vendor risk assessments are sluggish, relying on point-in-time spreadsheets that leave organizations blind to sudden security threats.<br><br>
+                                    <strong>Our Choice of Tools:</strong> We selected an AI-driven approach powered by <strong>FastAPI / Node</strong> and <strong>Firebase</strong> because they provide unparalleled speed, real-time data synchronization, and scalability. The frontend utilizes <strong>Glassmorphism UI</strong> and <strong>Chart.js</strong> to ensure that complex risk data is easily digestible and beautiful for stakeholders.
+                                </p>
+                            </div>
+
+                            <!-- How Score is Calculated -->
+                            <div class="card" style="border-left: 4px solid var(--med); padding: 30px;">
+                                <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;"><span style="font-size: 1.5rem;">🧠</span> How the Risk Score is Calculated</h3>
+                                <p style="color:var(--text-dim); font-size: 1.1rem; line-height: 1.8;">
+                                    Currently, the risk engine calculates scores using a <strong>Weighted Random-Walk Simulation</strong> combined with mean-reversion algorithms. Every 10-15 seconds, the engine factors in the vendor's <i>Criticality Weight</i> and applies a stochastic anomaly drift. If a score crosses the threshold of <strong>70</strong>, it automatically triggers a High-Risk Alert and executes an immutable log entry.
+                                </p>
+                            </div>
+
+                            <!-- Future Additions -->
+                            <div class="card" style="border-left: 4px solid var(--high); padding: 30px;">
+                                <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;"><span style="font-size: 1.5rem;">🔮</span> What We Will Add in the Future</h3>
+                                <p style="color:var(--text-dim); font-size: 1.1rem; line-height: 1.8;">
+                                    In Phases 2 and 3, CRAG will evolve from simulated risk scoring to incorporating <strong>Live OSINT external threat intelligence feeds</strong> via REST APIs. We will integrate powerful Machine Learning models for predictive breach forecasting and Natural Language Processing to scan security policies. Finally, we plan to implement a <strong>Blockchain-Backed Ledger</strong> to make our compliance auditing fully distributed and cryptographically secure.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </section>
 

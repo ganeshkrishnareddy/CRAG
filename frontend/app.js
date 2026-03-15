@@ -129,6 +129,8 @@ function showApp() {
         $('#nav-audit').style.display = 'none';
         $('#nav-accounts').style.display = 'none';
         $('#nav-architecture').style.display = 'none';
+        const navImpl = $('#nav-implementation');
+        if (navImpl) navImpl.style.display = 'none';
 
         const navVendorsAdd = $('#nav-vendors-add');
         if (navVendorsAdd) navVendorsAdd.style.display = 'none';
@@ -138,7 +140,7 @@ function showApp() {
         if (engineToggle) engineToggle.style.display = 'none';
 
         // Redirect to dashboard if on forbidden page
-        if (['vendors', 'audit', 'accounts', 'architecture'].includes($('.nav-btn.active').dataset.pane)) {
+        if (['vendors', 'audit', 'accounts', 'architecture', 'implementation'].includes($('.nav-btn.active').dataset.pane)) {
             $('#nav-dashboard').click();
         }
     } else {
@@ -147,6 +149,8 @@ function showApp() {
         $('#nav-audit').style.display = 'flex';
         $('#nav-accounts').style.display = 'flex';
         $('#nav-architecture').style.display = 'flex';
+        const navImpl = $('#nav-implementation');
+        if (navImpl) navImpl.style.display = 'flex';
 
         const navVendorsAdd = $('#nav-vendors-add');
         if (navVendorsAdd) navVendorsAdd.style.display = 'block';
@@ -827,8 +831,17 @@ function renderAccountsTable(users) {
         return;
     }
 
+    // Deduplicate users by username before rendering
+    const uniqueUsers = Object.values(users.reduce((acc, u) => {
+        // Keep the first one found, or prefer Admins if multiple exist
+        if (!acc[u.username] || (u.role === 'Admin' && acc[u.username].role !== 'Admin')) {
+            acc[u.username] = u;
+        }
+        return acc;
+    }, {}));
+
     // Sort users: Admins first, then alphabetical by username
-    const sorted = [...users].sort((a, b) => {
+    const sorted = uniqueUsers.sort((a, b) => {
         if (a.role !== b.role) return a.role === 'Admin' ? -1 : 1;
         return a.username.localeCompare(b.username);
     });
